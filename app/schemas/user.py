@@ -37,3 +37,12 @@ class UserDelete(BaseModel):
      class Config:
         from_attribute = True
 
+
+
+
+
+
+
+
+
+
