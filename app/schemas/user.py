@@ -7,9 +7,8 @@ class UserBase(BaseModel):
     first_name: str
     last_name: str
     email: str
-    
     class Config:
-        from_attribute = True
+        from_attributes = True
     
 # create a new user
 class UserCreate(BaseModel):
@@ -19,23 +18,24 @@ class UserCreate(BaseModel):
     password: str
     
      class Config:
-        from_attribute = True
+        from_attributes = True
     
 # schema for updating user data
 class UserUpdate(BaseModel):
     first_name: str
     last_name: str
     email: str
+    password: str
     
      class Config:
-        from_attribute = True
+        from_attributes = True
 
 #   schema for deleting user data
 class UserDelete(BaseModel):
     id: int
     
      class Config:
-        from_attribute = True
+        from_attributes = True
 
 
 
