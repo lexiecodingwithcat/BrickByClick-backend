@@ -87,3 +87,18 @@ def authenticate_user(email: str, password: str, db):
 def create_access_token(email: str, expires_delta: timedelta):
     encode = {"sub": email, "exp": datetime.now() + expires_delta}
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
+
+# decode JWT
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail="Could not validate user")
+        return {"email": email}
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Could not validate user")
