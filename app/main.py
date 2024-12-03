@@ -7,7 +7,7 @@ from app.database import SessionLocal, engine, get_db, Base
 from sqlalchemy.orm import Session
 # from app.models.user import User
 import app.routes.user as User
-
+import app.routes.auth as Auth
 # import schema
 # from  import UserBase
 
@@ -23,3 +23,5 @@ async def read_root():
     return {"message": "Welcome to the API!"}
 # user router
 app.include_router(User.router)
+# auth router
+app.include_router(Auth.router)
