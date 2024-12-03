@@ -1,30 +1,21 @@
-from fastapi import FastAPI, HTTPException, Depnds
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Annotated
 # import database tables
-import models
-from database import SessionLocal, engine
+# import app.models as models
+from app.database import SessionLocal, engine, get_db, Base
 from sqlalchemy.orm import Session
+# from app.models.user import User
+import app.routes.user as User
+
 # import schema
-from schemas import userBase
+# from  import UserBase
+
 
 app = FastAPI()
 # create tables in database
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
+db_dependency = Annotated[Session, Depends(get_db)]
 
-
-# connect to database
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-
-
-
-
-
-
+# user router
+app.include_router(User.router)

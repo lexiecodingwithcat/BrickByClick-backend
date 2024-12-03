@@ -2,9 +2,9 @@ from fastapi import APIRouter, HTTPException, Depends
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from typing import Annotated, List
-from models import User
-from schemas import UserBase, userCreate, UserUpdate, UserDelete
-from database import get_db
+from app.models.user import User
+from app.schemas.user import UserBase, UserCreate, UserUpdate
+from app.database import get_db
 
 
 # the function of annotated:
@@ -30,7 +30,7 @@ async def get_user(id: int, db: db_dependency):
 
 
 @router.post("/", response_model=UserBase)
-async def create_user(user: userCreate, db: db_dependency):
+async def create_user(user: UserCreate, db: db_dependency):
     # encrypt the password
     hashed_password = pwd_context.hash(user.password)
     db_users = User(first_name=user.first_name, last_name=user.last_name,
