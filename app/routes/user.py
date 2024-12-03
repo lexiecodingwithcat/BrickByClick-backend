@@ -31,10 +31,14 @@ async def get_user(id: int, db: db_dependency):
 
 @router.post("/", response_model=UserBase)
 async def create_user(user: UserCreate, db: db_dependency):
+    # check if the user already exists
+    db_user = db.query(User).filter(User.email == user.email).first()
+    if db_user is not None:
+        raise HTTPException(status_code=400, detail="Email already registered")
     # encrypt the password
     hashed_password = pwd_context.hash(user.password)
     db_users = User(first_name=user.first_name, last_name=user.last_name,
-                    email=user.email, password=hashed_password)
+                    email=user.email, password=hashed_password, is_admin=user.is_admin)
 
     db.add(db_users)
     db.commit()
@@ -55,6 +59,8 @@ async def update_user(id: int, user: UserUpdate, db: db_dependency):
         db_user.email = user.email
     if user.password is not None:
         db_user.password = pwd_context.hash(user.password)
+    if user.is_admin is not None:
+        db_user.is_admin = user.is_admin
     db.commit()
     db.refresh(db_user)
     return db_user

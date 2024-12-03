@@ -21,6 +21,7 @@ class UserCreate(BaseModel):
     last_name: str
     email: str
     password: str
+    is_admin: Optional[bool] = False
 
     class Config:
         from_attributes = True
@@ -33,6 +34,7 @@ class UserUpdate(BaseModel):
     last_name: Optional[str]
     email: Optional[str]
     password: Optional[str]
+    is_admin: Optional[bool]
 
     class Config:
         from_attributes = True
