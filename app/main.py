@@ -17,5 +17,9 @@ app = FastAPI()
 Base.metadata.create_all(bind=engine)
 db_dependency = Annotated[Session, Depends(get_db)]
 
+
+@app.get("/")
+async def read_root():
+    return {"message": "Welcome to the API!"}
 # user router
 app.include_router(User.router)

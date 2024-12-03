@@ -35,6 +35,7 @@ async def create_user(user: UserCreate, db: db_dependency):
     hashed_password = pwd_context.hash(user.password)
     db_users = User(first_name=user.first_name, last_name=user.last_name,
                     email=user.email, password=hashed_password)
+
     db.add(db_users)
     db.commit()
     db.refresh(db_users)
@@ -46,12 +47,14 @@ async def update_user(id: int, user: UserUpdate, db: db_dependency):
     db_user = db.query(User).filter(User.id == id).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    db_user.first_name = user.first_name
-    db_user.last_name = user.last_name
-    db_user.email = user.email
-    if user.password:
+    if user.first_name is not None:
+        db_user.first_name = user.first_name
+    if user.last_name is not None:
+        db_user.last_name = user.last_name
+    if user.email is not None:
+        db_user.email = user.email
+    if user.password is not None:
         db_user.password = pwd_context.hash(user.password)
-
     db.commit()
     db.refresh(db_user)
     return db_user

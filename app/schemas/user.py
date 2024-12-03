@@ -1,6 +1,6 @@
 # define request body and response body
 from pydantic import BaseModel
-
+from typing import Optional
 # schema for outputting user data
 
 
@@ -29,10 +29,10 @@ class UserCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    first_name: str
-    last_name: str
-    email: str
-    password: str
+    first_name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[str]
+    password: Optional[str]
 
     class Config:
         from_attributes = True
