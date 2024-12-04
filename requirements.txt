@@ -7,4 +7,4 @@ python-jose
 python-multipart
 passlib
 psycopg2
-pydantic[settings]
+pydantic
