@@ -18,7 +18,7 @@ router = APIRouter(tags=["auth"], prefix="/auth")
 # used to identify and decode JWT
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440
 # password hashing and unhashing
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # auth is this file while token is the endpoint of API
@@ -85,7 +85,8 @@ def authenticate_user(email: str, password: str, db):
 
 
 def create_access_token(email: str, expires_delta: timedelta):
-    encode = {"sub": email, "exp": datetime.now() + expires_delta}
+    encode = {"sub": email,
+              "exp": datetime.now() + expires_delta}
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 # decode JWT to get the current user
@@ -94,10 +95,11 @@ def create_access_token(email: str, expires_delta: timedelta):
 async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)], db: db_dependency):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        print(payload)
         email: str = payload.get("sub")
         if email is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                detail="Could not validate user")
+                                detail="Could not validate user-email")
         user = db.query(User).filter(User.email == email).first()
         if user is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
@@ -105,4 +107,4 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)], db: db
         return user
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Could not validate user")
+                            detail="Could not validate user-payload")

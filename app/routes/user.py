@@ -34,6 +34,7 @@ async def get_user(id: int, db: db_dependency):
 
 @router.post("/", response_model=UserBase)
 async def create_user(user: UserCreate, db: db_dependency, current_user: User = Depends(get_current_user)):
+    print(f"Current user is admin: {current_user.is_admin}")
     # check if the current user is an admin
     if not current_user.is_admin:
         raise HTTPException(
