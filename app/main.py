@@ -20,7 +20,7 @@ Base.metadata.create_all(bind=engine)
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[UserModel, Depends(get_current_user)]
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
+password = os.getenv("ADMIN_PASSWORD")
 def initial_admin(db: Session):
     db_user = db.query(UserModel).filter(UserModel.email == "test@example.com").first()
     if db_user is not None:
@@ -28,7 +28,8 @@ def initial_admin(db: Session):
                             detail="Email already registered")
 
     # Encrypt the password
-    hashed_password = pwd_context.hash(os.getenv("ADMIN_PASSWORD"))
+    
+    hashed_password = pwd_context.hash(password)
     db_user = UserModel(first_name="test", last_name="demo",
                    email="test@example.com", password=hashed_password, is_admin=True)
 
