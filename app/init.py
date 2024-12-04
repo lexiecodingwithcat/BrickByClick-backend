@@ -4,7 +4,7 @@ from app.models.user import User
 
 # db_dependency = Annotated[Session, Depends(get_db)]
 def initial_admin(db):
-      db_user = db.query(User).filter(User.email == "test@example.com").first()
+    db_user = db.query(User).filter(User.email == "test@example.com").first()
     if db_user is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Email already registered")
