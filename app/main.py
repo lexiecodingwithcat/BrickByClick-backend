@@ -17,9 +17,26 @@ Base.metadata.create_all(bind=engine)
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[UserModel, Depends(get_current_user)]
 
+def initial_admin(db: Session):
+    db_user = db.query(User).filter(User.email == "test@example.com").first()
+    if db_user is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Email already registered")
+
+    # Encrypt the password
+    hashed_password = pwd_context.hash(os.getenv("ADMIN_PASSWORD"))
+    db_user = User(first_name="test", last_name="demo",
+                   email="test@example.com", password=hashed_password, is_admin=True)
+
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+
 @app.on_event("startup")
 async def startup_event():
-    initial_admin(db_dependency)
+    # Get a database session
+    db: Session = next(get_db())
+    initial_admin(db)
 
 
 @app.get("/", status_code=status.HTTP_200_OK)
