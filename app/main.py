@@ -22,14 +22,14 @@ user_dependency = Annotated[UserModel, Depends(get_current_user)]
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def initial_admin(db: Session):
-    db_user = db.query(User).filter(User.email == "test@example.com").first()
+    db_user = db.query(UserModel).filter(UserModel.email == "test@example.com").first()
     if db_user is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Email already registered")
 
     # Encrypt the password
     hashed_password = pwd_context.hash(os.getenv("ADMIN_PASSWORD"))
-    db_user = User(first_name="test", last_name="demo",
+    db_user = UserModel(first_name="test", last_name="demo",
                    email="test@example.com", password=hashed_password, is_admin=True)
 
     db.add(db_user)
