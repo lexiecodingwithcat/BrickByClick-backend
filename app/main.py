@@ -8,7 +8,10 @@ import app.routes.user as User
 import app.routes.auth as Auth
 import starlette.status as status
 from app.routes.auth import get_current_user
-from app.init import initial_admin
+from passlib.context import CryptContext
+import os
+
+
 
 app = FastAPI()
 
@@ -16,6 +19,7 @@ app = FastAPI()
 Base.metadata.create_all(bind=engine)
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[UserModel, Depends(get_current_user)]
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def initial_admin(db: Session):
     db_user = db.query(User).filter(User.email == "test@example.com").first()
