@@ -18,7 +18,7 @@ router = APIRouter(tags=["auth"], prefix="/auth")
 # used to identify and decode JWT
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = 1440
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 # password hashing and unhashing
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # auth is this file while token is the endpoint of API
