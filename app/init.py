@@ -1,9 +1,12 @@
 from app.routes.user import pwd_context
 import os
 from app.models.user import User
+from typing import Annotated
+from sqlalchemy.orm import Session
+from fastapi import Depends
 
-# db_dependency = Annotated[Session, Depends(get_db)]
-def initial_admin(db):
+db_dependency = Annotated[Session, Depends(get_db)]
+def initial_admin(db:db_dependency):
     db_user = db.query(User).filter(User.email == "test@example.com").first()
     if db_user is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
