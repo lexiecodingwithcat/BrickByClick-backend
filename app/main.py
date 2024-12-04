@@ -8,13 +8,18 @@ import app.routes.user as User
 import app.routes.auth as Auth
 import starlette.status as status
 from app.routes.auth import get_current_user
-
+from app.init import initial_admin
 
 app = FastAPI()
+
 # create tables in database
 Base.metadata.create_all(bind=engine)
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[UserModel, Depends(get_current_user)]
+
+@app.on_event("startup")
+async def startup_event():
+    initial_admin(db_dependency)
 
 
 @app.get("/", status_code=status.HTTP_200_OK)
