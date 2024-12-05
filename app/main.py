@@ -21,6 +21,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[UserModel, Depends(get_current_user)]
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 password = os.getenv("ADMIN_PASSWORD")
+print(password)
 def initial_admin(db: Session):
     db_user = db.query(UserModel).filter(UserModel.email == "test@example.com").first()
     if db_user is not None:

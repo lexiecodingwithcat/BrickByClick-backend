@@ -66,7 +66,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
                             )
     # if there is a valid user, create a token
     token = create_access_token(form_data.username, timedelta(
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+        minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES)))
     return {"access_token": token, "token_type": "bearer"}
 
 
