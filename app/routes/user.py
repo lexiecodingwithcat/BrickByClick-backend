@@ -33,7 +33,7 @@ async def get_user(id: int, db: db_dependency):
 
 
 @router.post("/", response_model=UserBase)
-async def create_user(user: UserCreate, db: db_dependency, current_user: UserBase = Depends(get_current_user)):
+async def create_user(user: UserCreate, db: db_dependency, current_user: Annotated[User, Depends(get_current_user)]):
     print(f"Current user is admin: {current_user.is_admin}")
     # check if the current user is an admin
     if not current_user.is_admin:
@@ -56,8 +56,7 @@ async def create_user(user: UserCreate, db: db_dependency, current_user: UserBas
         id=new_user.id,
         first_name=new_user.first_name,
         last_name=new_user.last_name,
-        email=new_user.email,
-        is_admin=new_user.is_admin
+        email=new_user.email
     )
 
 @router.put("/{id}", response_model=UserBase)
