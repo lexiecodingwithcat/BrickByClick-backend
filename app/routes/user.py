@@ -33,8 +33,8 @@ async def get_user(id: int, db: db_dependency):
 
 
 @router.post("/", response_model=UserBase)
-async def create_user(user: UserCreate, db: db_dependency, current_user: User = Depends(get_current_user)):
-    print(f"Current user is admin: {current_user.is_admin}")
+async def create_user(user: UserCreate, db: db_dependency, current_user: UserBase = Depends(get_current_user)):
+    # print(f"Current user is admin: {current_user.is_admin}")
     # check if the current user is an admin
     if not current_user.is_admin:
         raise HTTPException(
@@ -46,14 +46,19 @@ async def create_user(user: UserCreate, db: db_dependency, current_user: User = 
                             detail="Email already registered")
     # encrypt the password
     hashed_password = pwd_context.hash(user.password)
-    db_users = User(first_name=user.first_name, last_name=user.last_name,
+    new_user = User(first_name=user.first_name, last_name=user.last_name,
                     email=user.email, password=hashed_password, is_admin=user.is_admin)
 
-    db.add(db_users)
+    db.add(new_user)
     db.commit()
-    db.refresh(db_users)
-    return db_users
-
+    db.refresh(new_user)
+    return UserBase(
+        id=new_user.id,
+        first_name=new_user.first_name,
+        last_name=new_user.last_name,
+        email=new_user.email,
+        is_admin=new_user.is_admin
+    )
 
 @router.put("/{id}", response_model=UserBase)
 async def update_user(id: int, user: UserUpdate, db: db_dependency, current_user: User = Depends(get_current_user)):
