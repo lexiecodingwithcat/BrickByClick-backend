@@ -11,8 +11,6 @@ from app.routes.auth import get_current_user
 from passlib.context import CryptContext
 import os
 
-
-
 app = FastAPI()
 
 # create tables in database
@@ -22,11 +20,14 @@ user_dependency = Annotated[UserModel, Depends(get_current_user)]
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 password = os.getenv("ADMIN_PASSWORD")
 
+
 def initial_admin(db: Session):
     db_user = db.query(UserModel).filter(UserModel.email == "test@example.com").first()
-    if db_user is not None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail="Email already registered")
+    if db_user:
+        # raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+        #                     detail="Email already registered")
+        print("Admin user already exists. Skipping creation.")
+        return
 
     # Encrypt the password
     
