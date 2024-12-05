@@ -60,7 +60,7 @@ async def create_user(user: UserCreate, db: db_dependency, current_user: Annotat
     )
 
 @router.put("/{id}", response_model=UserBase)
-async def update_user(id: int, user: UserUpdate, db: db_dependency, current_user: User = Depends(get_current_user)):
+async def update_user(id: int, user: UserUpdate, db: db_dependency, current_user: Annotated[User, Depends(get_current_user)]):
     if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough permissions")
@@ -84,7 +84,7 @@ async def update_user(id: int, user: UserUpdate, db: db_dependency, current_user
 
 
 @router.delete("/{id}", status_code=204)
-def delete_user(id: int, db: db_dependency, current_user: User = Depends(get_current_user)):
+def delete_user(id: int, db: db_dependency, current_user: Annotated[User, Depends(get_current_user)]):
     if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Not enough permissions")
