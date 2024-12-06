@@ -10,6 +10,7 @@ import starlette.status as status
 from app.routes.auth import get_current_user
 from passlib.context import CryptContext
 import os
+from fastapi.middleware.cors import CORSMiddleware  
 
 app = FastAPI()
 
@@ -52,6 +53,14 @@ async def read_user(user: user_dependency, db: db_dependency):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     return {"User": user}
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+) 
 
 # user router
 app.include_router(User.router)
