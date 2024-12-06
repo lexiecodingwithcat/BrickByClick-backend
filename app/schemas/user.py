@@ -13,6 +13,8 @@ class UserBase(BaseModel):
 
     class Config:
         from_attributes = True
+    class Config:
+        orm_mode = True
 
 # create a new user
 
