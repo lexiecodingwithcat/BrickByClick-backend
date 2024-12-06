@@ -20,7 +20,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 @router.get("/", response_model=List[UserBase])
 async def get_users(db: db_dependency):
     db_users = db.query(User).all()
-    return db_users
+    return [UserBase.from_orm(user) for user in db_users]
 
 
 @router.get("/{id}", response_model=UserBase)
