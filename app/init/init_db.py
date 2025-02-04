@@ -1,9 +1,12 @@
 from app.database import SessionLocal
 from app.models.country import Country
 from app.models.province import Province
+from app.models.city import City
 from app.models.user import User
 from passlib.context import CryptContext
+from sqlalchemy.exc import SQLAlchemyError
 import os
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 password = os.getenv("ADMIN_PASSWORD")
@@ -48,6 +51,7 @@ def initialize_default_countries():
         db.close()
 
 
+# initialize Canadian provinces
 def initialize_canadian_province():
     try:
         # Get Canada from the Country table
@@ -96,5 +100,208 @@ def initialize_canadian_province():
     except Exception as e:
         db.rollback()
         print(f"Error initializing provinces: {str(e)}")
+    finally:
+        db.close()
+
+
+# initialize canadian cities by province
+def initialize_canadian_cities():
+    try:
+        # city data by province
+        province_cities = {
+            "ON": [
+                "Toronto",
+                "Ottawa",
+                "Mississauga",
+                "Hamilton",
+                "London",
+                "Markham",
+                "Vaughan",
+                "Kitchener",
+                "Brampton",
+                "Windsor",
+                "Richmond Hill",
+                "Oakville",
+                "Burlington",
+                "Greater Sudbury",
+                "Oshawa",
+                "Barrie",
+            ],
+            "QC": [
+                "Montreal",
+                "Quebec City",
+                "Laval",
+                "Gatineau",
+                "Longueuil",
+                "Sherbrooke",
+                "Saguenay",
+                "Levis",
+                "Trois-Rivieres",
+                "Terrebonne",
+                "Saint-Jean-sur-Richelieu",
+                "Repentigny",
+                "Brossard",
+                "Drummondville",
+            ],
+            "BC": [
+                "Vancouver",
+                "Victoria",
+                "Surrey",
+                "Burnaby",
+                "Richmond",
+                "Kelowna",
+                "Langley",
+                "Coquitlam",
+                "Abbotsford",
+                "Kamloops",
+                "Nanaimo",
+                "Chilliwack",
+                "Prince George",
+                "Vernon",
+                "Penticton",
+                "Campbell River",
+                "Courtenay",
+            ],
+            "AB": [
+                "Calgary",
+                "Edmonton",
+                "Red Deer",
+                "Lethbridge",
+                "Airdrie",
+                "St. Albert",
+                "Medicine Hat",
+                "Grande Prairie",
+                "Fort McMurray",
+                "Leduc",
+                "Camrose",
+                "Spruce Grove",
+                "Banff",
+                "Jasper",
+                "Canmore",
+                "Lloydminster",
+                "Brooks",
+                "Cold Lake",
+            ],
+            "MB": [
+                "Winnipeg",
+                "Brandon",
+                "Steinbach",
+                "Thompson",
+                "Portage la Prairie",
+                "Selkirk",
+                "Winkler",
+                "Dauphin",
+                "Morden",
+                "Flin Flon",
+                "Swan River",
+                "The Pas",
+            ],
+            "SK": [
+                "Saskatoon",
+                "Regina",
+                "Prince Albert",
+                "Moose Jaw",
+                "Swift Current",
+                "North Battleford",
+                "Yorkton",
+                "Estevan",
+                "Weyburn",
+                "Martensville",
+                "Warman",
+                "Meadow Lake",
+            ],
+            "NS": [
+                "Halifax",
+                "Sydney",
+                "Dartmouth",
+                "Truro",
+                "New Glasgow",
+                "Kentville",
+                "Amherst",
+            ],
+            "NB": [
+                "Saint John",
+                "Moncton",
+                "Fredericton",
+                "Dieppe",
+                "Miramichi",
+                "Edmundston",
+                "Campbellton",
+            ],
+            "NL": [
+                "St. John's",
+                "Conception Bay South",
+                "Mount Pearl",
+                "Paradise",
+                "Corner Brook",
+                "Grand Falls-Windsor",
+                "Gander",
+                "Happy Valley-Goose Bay",
+                "Labrador City",
+            ],
+            "PE": [
+                "Charlottetown",
+                "Summerside",
+                "Stratford",
+                "Cornwall",
+                "Montague",
+                "Kensington",
+            ],
+            "NT": [
+                "Yellowknife",
+                "Hay River",
+                "Inuvik",
+                "Fort Smith",
+                "Norman Wells",
+                "Behchoko",
+            ],
+            "YT": [
+                "Whitehorse",
+                "Dawson City",
+                "Watson Lake",
+                "Haines Junction",
+                "Carmacks",
+            ],
+            "NU": [
+                "Iqaluit",
+                "Rankin Inlet",
+                "Arviat",
+                "Cambridge Bay",
+                "Baker Lake",
+                "Pond Inlet",
+            ],
+        }
+
+        for province_code, cities in province_cities.items():
+            # Get the province by code
+            province = db.query(Province).filter(Province.code == province_code).first()
+
+            if not province:
+                print(f"Province with code {province_code} not found, skipping cities")
+                continue
+
+            # Add cities to the City table
+            for city_name in cities:
+                # Check if the city already exists
+                existing = (
+                    db.query(City)
+                    .filter(City.name == city_name, City.province_id == province.id)
+                    .first()
+                )
+
+                if not existing:
+                    new_city = City(name=city_name, province_id=province.id)
+                    db.add(new_city)
+                    print(f"Added {city_name} to {province.name}")
+
+        db.commit()
+        print("Canadian cities initialized successfully")
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        print(f"Database error initializing cities: {str(e)}")
+    except Exception as e:
+        db.rollback()
+        print(f"Unexpected error: {str(e)}")
     finally:
         db.close()

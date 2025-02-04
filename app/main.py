@@ -13,6 +13,7 @@ from app.init.init_db import (
     initial_admin,
     initialize_default_countries,
     initialize_canadian_province,
+    initialize_canadian_cities,
 )
 
 
@@ -33,6 +34,8 @@ async def startup_event():
     initialize_default_countries()
     # initialize Canadian provinces
     initialize_canadian_province()
+    # initialize Canadian cities
+    initialize_canadian_cities()
 
 
 @app.get("/", status_code=status.HTTP_200_OK)
