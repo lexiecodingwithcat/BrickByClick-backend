@@ -1,6 +1,6 @@
 from app.database import SessionLocal
-from app.models import Country
-from app.models import Province
+from app.models.country import Country
+from app.models.province import Province
 from app.models.user import User
 from passlib.context import CryptContext
 import os
@@ -12,27 +12,23 @@ db = SessionLocal()
 
 # initialize admin user function
 def initial_admin():
-    db_user = db.query(User).filter(User.email == "test@example.com").first()
-    if db_user:
-        # raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-        #                     detail="Email already registered")
-        print("Admin user already exists. Skipping creation.")
-        return
-
-    # Encrypt the password
-
-    hashed_password = pwd_context.hash(password)
-    db_user = User(
-        first_name="test",
-        last_name="demo",
-        email="test@example.com",
-        password=hashed_password,
-        is_admin=True,
-    )
-
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    try:
+        # check if the admin user already exists
+        existing = db.query(User).filter(User.email == "test@example.com").first()
+        if not existing:
+            # create a new admin user
+            hashed_password = pwd_context.hash(password)
+            admin = User(
+                first_name="test",
+                last_name="demo",
+                email="test@example.com",
+                password=hashed_password,
+                is_admin=True,
+            )
+            db.add(admin)
+            db.commit()
+    finally:
+        db.close()
 
 
 # initialize default countries function
