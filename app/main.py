@@ -8,51 +8,41 @@ import app.routes.user as User
 import app.routes.auth as Auth
 import starlette.status as status
 from app.routes.auth import get_current_user
-from passlib.context import CryptContext
-import os
-from fastapi.middleware.cors import CORSMiddleware  
+from fastapi.middleware.cors import CORSMiddleware
+from app.init.init_db import (
+    initial_admin,
+    initialize_default_countries,
+    initialize_canadian_province,
+)
 
+
+# Create a FastAPI instance
 app = FastAPI()
 
 # create tables in database
 Base.metadata.create_all(bind=engine)
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[UserModel, Depends(get_current_user)]
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-password = os.getenv("ADMIN_PASSWORD")
 
-
-def initial_admin(db: Session):
-    db_user = db.query(UserModel).filter(UserModel.email == "test@example.com").first()
-    if db_user:
-        # raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-        #                     detail="Email already registered")
-        print("Admin user already exists. Skipping creation.")
-        return
-
-    # Encrypt the password
-    
-    hashed_password = pwd_context.hash(password)
-    db_user = UserModel(first_name="test", last_name="demo",
-                   email="test@example.com", password=hashed_password, is_admin=True)
-
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
 
 @app.on_event("startup")
 async def startup_event():
-    # Get a database session
-    db: Session = next(get_db())
-    initial_admin(db)
+    # initialize admin user
+    initial_admin()
+    # initialize default countries
+    initialize_default_countries()
+    # initialize Canadian provinces
+    initialize_canadian_province()
 
 
 @app.get("/", status_code=status.HTTP_200_OK)
 async def read_user(user: user_dependency, db: db_dependency):
     if user is None:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+        )
     return {"User": user}
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -60,7 +50,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-) 
+)
 
 # user router
 app.include_router(User.router)
