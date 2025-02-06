@@ -3,6 +3,7 @@ from app.database import Base
 from sqlalchemy.orm import relationship
 
 
+# Province model
 class Province(Base):
     __tablename__ = "provinces"
 
@@ -17,3 +18,4 @@ class Province(Base):
     )
 
     cities = relationship("City", back_populates="province")
+    country = relationship("Country", back_populates="provinces")
