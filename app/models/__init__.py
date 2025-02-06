@@ -7,3 +7,4 @@ from .project import Project
 from .task import Task
 from .project_tracking import ProjectTracking
 from .notification import Notification
+from .project_task import ProjectTask
