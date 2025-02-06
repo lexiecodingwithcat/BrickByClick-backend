@@ -16,12 +16,19 @@ from app.init.init_db import (
     initialize_canadian_cities,
 )
 import app.models
+from sqlalchemy import Table
 
 # Create a FastAPI instance
 app = FastAPI()
 
 
-Base.metadata.drop_all(bind=engine)  # drop all tables
+# the table will delete
+table_name = "tasks"
+
+# delete the table if it already exists
+table = Table(table_name, Base.metadata, autoload_with=engine)
+table.drop(engine)
+
 Base.metadata.create_all(bind=engine)  # create all tables in database
 
 db_dependency = Annotated[Session, Depends(get_db)]
