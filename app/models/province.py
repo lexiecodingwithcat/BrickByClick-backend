@@ -3,6 +3,7 @@ from app.database import Base
 from sqlalchemy.orm import relationship
 
 
+# Province model
 class Province(Base):
     __tablename__ = "provinces"
 

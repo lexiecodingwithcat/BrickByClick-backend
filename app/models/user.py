@@ -1,7 +1,15 @@
 # define data table
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, func, Enum
 from app.database import Base
 from sqlalchemy.sql import func
+from enum import Enum as UserEnum
+
+
+# define user role
+class UserRole(UserEnum):
+    constractor = "constractor"
+    worker = "worker"
+    admin = "admin"
 
 
 class User(Base):
@@ -12,6 +20,9 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String)
     is_admin = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=False)
+    role = Column(Enum(UserRole), default=UserRole.constractor)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True),
-                        server_default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

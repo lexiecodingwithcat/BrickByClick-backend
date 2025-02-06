@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 
 
+# City model
 class City(Base):
     __tablename__ = "cities"
 
