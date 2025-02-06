@@ -15,7 +15,7 @@ from app.init.init_db import (
     initialize_canadian_province,
     initialize_canadian_cities,
 )
-import models
+import app.models
 
 # Create a FastAPI instance
 app = FastAPI()
