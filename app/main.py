@@ -20,8 +20,10 @@ import app.models
 # Create a FastAPI instance
 app = FastAPI()
 
-# create tables in database
-Base.metadata.create_all(bind=engine)
+
+Base.metadata.drop_all(bind=engine)  # drop all tables
+Base.metadata.create_all(bind=engine)  # create all tables in database
+
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[UserModel, Depends(get_current_user)]
 
