@@ -37,7 +37,6 @@ class Project(Base):
         ForeignKey("provinces.id"),
         nullable=False,
     )
-    postal_code = Column(String(10), nullable=False)
     budget = Column(Float, nullable=False)
     status = Column(
         Enum(ProjectStatus), nullable=False, default=ProjectStatus.PENDING
