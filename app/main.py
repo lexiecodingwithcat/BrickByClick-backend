@@ -27,6 +27,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[UserModel, Depends(get_current_user)]
 
 
+
 @app.on_event("startup")
 async def startup_event():
     # initialize admin user
