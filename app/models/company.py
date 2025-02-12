@@ -7,7 +7,7 @@ class Company(Base):
     id = Column(Integer, primary_key= True, index = True, autoincrement= True)
     name = Column(String(50), nullable= False, unique= True)
     address = Column(String(100), nullable = False)
-    postal_code = Column(String(7), nullable = False)
+    postal_code = Column(String(10), nullable = False)
     phone_number = Column(Integer)
     city_id = Column(
         Integer,

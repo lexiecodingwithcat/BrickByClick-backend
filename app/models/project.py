@@ -21,11 +21,12 @@ class Project(Base):
     __tablename__ = "projects"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable= False)
     name = Column(String(50), nullable=False, unique=True)
     current_assignee = Column(Integer, ForeignKey("users.id"), nullable=False)
     priority = Column(Enum(ProjectPriority), nullable=False, default=ProjectPriority.LOW)
     address = Column(String(100), nullable=False)
-    postal_code = Column(String(7), nullable = True)
+    postal_code = Column(String(10), nullable = True)
     city_id = Column(
         Integer,
         ForeignKey("cities.id"),
