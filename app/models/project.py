@@ -25,6 +25,7 @@ class Project(Base):
     current_assignee = Column(Integer, ForeignKey("users.id"), nullable=False)
     priority = Column(Enum(ProjectPriority), nullable=False, default=ProjectPriority.LOW)
     address = Column(String(100), nullable=False)
+    postal_code = Column(String(7), nullable = True)
     city_id = Column(
         Integer,
         ForeignKey("cities.id"),
