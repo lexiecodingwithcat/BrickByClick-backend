@@ -9,8 +9,6 @@ class ProjectStatus(PyEnum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
-    CANCELLED = "cancelled"
-    NORMAL = "normal"
     DELAYED = "delayed"
 
 class ProjectPriority(PyEnum):
