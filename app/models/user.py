@@ -2,6 +2,11 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from app.database import Base
 from sqlalchemy.sql import func
+from enum import Enum as PyEnum
+
+class Role(PyEnum):
+    ADMIN = "administrator",
+
 
 
 class User(Base):
