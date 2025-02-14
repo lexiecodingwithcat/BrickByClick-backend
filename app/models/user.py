@@ -1,5 +1,5 @@
 # define data table
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime,ForeignKey,Enum
 from app.database import Base
 from sqlalchemy.sql import func
 from enum import Enum as PyEnum
