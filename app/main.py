@@ -10,6 +10,7 @@ import starlette.status as status
 from app.routes.auth import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
 from app.init.init_db import (
+    initial_company,
     initial_admin,
     initialize_default_countries,
     initialize_canadian_province,
@@ -27,16 +28,19 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[UserModel, Depends(get_current_user)]
 
 
+
 @app.on_event("startup")
 async def startup_event():
-    # initialize admin user
-    initial_admin()
-    # initialize default countries
     initialize_default_countries()
     # initialize Canadian provinces
     initialize_canadian_province()
     # initialize Canadian cities
     initialize_canadian_cities()
+    # initialize Raynow as first company
+    initial_company()
+    # initialize admin user
+    initial_admin()
+    # initialize default countries
 
 
 @app.get("/", status_code=status.HTTP_200_OK)

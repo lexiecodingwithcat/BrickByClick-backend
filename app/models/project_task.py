@@ -7,8 +7,6 @@ class TaskStatus(PyEnum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
-    CANCELLED = "cancelled"
-    NORMAL = "normal"
     DELAYED = "delayed"
 
 
@@ -26,9 +24,9 @@ class ProjectTask(Base):
     end_date = Column(DateTime(timezone=True), nullable=False)
     actual_end_date = Column(DateTime(timezone=True), nullable=True)
     budget = Column(Float, nullable=False)
-    debt = Column(Float, nullable=False)
+    amount_due = Column(Float, nullable=False)
     dependency = Column(Integer, nullable=True)  # task id
-    notes = Column(String(100), nullable=True)
+    notes = Column(String(200), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

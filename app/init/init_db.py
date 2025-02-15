@@ -3,15 +3,35 @@ from app.models.country import Country
 from app.models.province import Province
 from app.models.city import City
 from app.models.user import User
+from app.models.company import Company
 from passlib.context import CryptContext
 from sqlalchemy.exc import SQLAlchemyError
 import os
-
+from app.models.user import Role
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 password = os.getenv("ADMIN_PASSWORD")
 db = SessionLocal()
 
+def initial_company():
+    try:
+        existing = db.query(Company).filter(Company.id ==1).first()
+        if not existing:
+            # create the default company
+            company = Company(
+                id=1,
+                name = 'Raynow Homes',
+                address = '14 Ave NW',
+                postal_code="T2E 1B7",
+                city_id = 1,
+                province_id = 2,
+                phone_number= '403-891-5668'
+
+            )
+            db.add(company)
+            db.commit()
+    finally:
+        db.close()
 
 # initialize admin user function
 def initial_admin():
@@ -27,6 +47,9 @@ def initial_admin():
                 email="test@example.com",
                 password=hashed_password,
                 is_admin=True,
+                is_active = True,
+                company_id = 1,
+                role = Role.ADMIN
             )
             db.add(admin)
             db.commit()
