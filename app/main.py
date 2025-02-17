@@ -41,7 +41,7 @@ async def startup_event():
     # initialize admin user
     initial_admin()
     # initialize default countries
-
+                                                                                                                                                                                                                                                                                                                                               
 
 @app.get("/", status_code=status.HTTP_200_OK)
 async def read_user(user: user_dependency, db: db_dependency):
