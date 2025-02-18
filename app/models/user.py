@@ -13,7 +13,7 @@ class Role(PyEnum):
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True, autoincrement= True)
-    company_id = Column(Integer, ForeignKey("companies.id"), nullable= False)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable= False, default =1)
     first_name = Column(String(50), index=True, nullable= False)
     last_name = Column(String(50), index=True, nullable= False)
     email = Column(String(255), unique=True, index=True, nullable= False)

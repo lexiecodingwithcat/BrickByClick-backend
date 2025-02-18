@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime, fun
 from app.database import Base
 from enum import Enum as PyEnum
 from sqlalchemy.orm import column_property
+from datetime import timedelta
 
 
 # ProjectStatus is a python enumeration that represents the status of a project
@@ -21,9 +22,9 @@ class Project(Base):
     __tablename__ = "projects"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    company_id = Column(Integer, ForeignKey("companies.id"), nullable= False)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable= False, default = 1)
     name = Column(String(50), nullable=False, unique=True)
-    current_assignee = Column(Integer, ForeignKey("users.id"), nullable=False)
+    current_assignee = Column(Integer, ForeignKey("users.id"), nullable=True)
     priority = Column(Enum(ProjectPriority), nullable=False, default=ProjectPriority.LOW)
     address = Column(String(100), nullable=False)
     postal_code = Column(String(10), nullable = True)
