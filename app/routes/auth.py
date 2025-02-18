@@ -91,7 +91,7 @@ def create_access_token(email: str, expires_delta: timedelta):
     expire = datetime.utcnow()+expires_delta
     encode = {"sub": email,
               "exp": expire}
-    print(f"Token will expire at: {expire}")  
+    # print(f"Token will expire at: {expire}")  
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 # decode JWT to get the current user
@@ -110,7 +110,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)], db: db
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="User not found")
         return user
-    except JWTError as e:
-        print(f"JWT error{e}")
+    except JWTError:
+        # print(f"JWT error{e}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Could not validate user-payload")

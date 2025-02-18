@@ -94,4 +94,19 @@ async def update_project(db:db_dependence, id:int, project:ProjectUpdate,current
     return db_project
 
 
+@router.delete("/{id}")
+def delete_project(id:int, db:db_dependence,current_user:Annotated[User, Depends(get_current_user)]):
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,detail = "User is not authorized."
+        )
+    db_project = db.query(Project).filter(Project.id == id).first()
+    if db_project is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project does not exist."
+        )
+    db.delete(db_project)
+    db.commit()
+    return db_project
+
 
