@@ -49,6 +49,8 @@ class ProjectUpdate(BaseModel):
     priority: Optional[ProjectPriority] = ProjectPriority.LOW
     address: Optional[str] = Field(None, max_length=100)
     postal_code: Optional[str] = Field(None, max_length=10)
+    city_id:Optional[int]
+    province_id: Optional[int]
     budget: Optional[float]
     status: Optional[ProjectStatus] = ProjectStatus.PENDING
     actual_end_date: Optional[datetime] = None
