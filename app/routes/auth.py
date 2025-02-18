@@ -13,7 +13,9 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 import os
 from app.schemas.user import UserBase
+from dotenv import load_dotenv
 
+load_dotenv()
 router = APIRouter(tags=["auth"], prefix="/auth")
 
 # used to identify and decode JWT
@@ -86,8 +88,10 @@ def authenticate_user(email: str, password: str, db):
 
 
 def create_access_token(email: str, expires_delta: timedelta):
+    expire = datetime.utcnow()+expires_delta
     encode = {"sub": email,
-              "exp": datetime.now() + expires_delta}
+              "exp": expire}
+    print(f"Token will expire at: {expire}")  
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 # decode JWT to get the current user
@@ -106,6 +110,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)], db: db
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="User not found")
         return user
-    except JWTError:
+    except JWTError as e:
+        print(f"JWT error{e}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Could not validate user-payload")

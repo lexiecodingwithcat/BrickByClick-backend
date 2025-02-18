@@ -47,7 +47,7 @@ async def create_user(user: UserCreate, db: db_dependency, current_user: Annotat
     # encrypt the password
     hashed_password = pwd_context.hash(user.password)
     new_user = User(first_name=user.first_name, last_name=user.last_name,
-                    email=user.email, password=hashed_password, is_admin=user.is_admin)
+                    email=user.email, password=hashed_password, is_admin=user.is_admin, company_id= user.company_id)
 
     db.add(new_user)
     db.commit()

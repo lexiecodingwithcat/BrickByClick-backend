@@ -24,6 +24,7 @@ class UserCreate(BaseModel):
     email: str
     password: str
     is_admin: Optional[bool] = False
+    company_id:Optional[int]= 1
 
     class Config:
         from_attributes = True

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from enum import Enum as PyEnum
 from datetime import datetime
@@ -19,20 +19,18 @@ class ProjectBase(BaseModel):
     id:int
     company_id:int
     name:str = Field(...,max_length=50)
-    current_assignee:int
+    current_assignee:str
     priority: ProjectPriority = ProjectPriority.LOW
     address:str = Field(...,max_length= 100)
     postal_code: Optional[str]= Field(None, max_length=10)
-    city_id:int
-    province_id: int
+    city_id:str
+    province_id: str
     budget:float
     status: ProjectStatus = ProjectStatus.PENDING
-    start_date = datetime
-    estimated_duration:Optional[int]
-    end_date = datetime
+    start_date : Optional[datetime] = None
+    estimated_duration:Optional[int] = None
+    end_date : Optional[datetime] = None
     actual_end_date:Optional[datetime]= None
-    created_at: datetime
-    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -40,17 +38,17 @@ class ProjectBase(BaseModel):
 # create project
 class ProjectCreate(BaseModel):
     name:str = Field(...,max_length=50)
-    current_assignee:int
+    current_assignee:str
     priority: ProjectPriority = ProjectPriority.LOW
     address:str = Field(...,max_length= 100)
     postal_code: Optional[str]= Field(None, max_length=10)
-    city_id:int
-    province_id: int
+    city_id:str
+    province_id: str
     budget:float
     status: ProjectStatus = ProjectStatus.PENDING
-    start_date = datetime
+    start_date : Optional[datetime] = None
     estimated_duration:Optional[int]
-    actual_end_date:Optional[datetime]= None
+    # actual_end_date:Optional[datetime]= None
 
     class Config:
         from_attributes = True

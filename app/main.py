@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.models.user import User as UserModel
 import app.routes.user as User
 import app.routes.auth as Auth
+import app.routes.project as Project
 import starlette.status as status
 from app.routes.auth import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
@@ -64,3 +65,5 @@ app.add_middleware(
 app.include_router(User.router)
 # auth router
 app.include_router(Auth.router)
+# project router
+app.include_router(Project.router)
