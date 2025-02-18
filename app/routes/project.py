@@ -3,13 +3,10 @@ from typing import Annotated,List
 from sqlalchemy.orm import Session
 from app.models.project import Project
 from app.models.user import User
-from app.models.city import City
-from app.models.province import Province
 from app.database import get_db
 from app.routes.auth import get_current_user
 from app.schemas.project import ProjectBase, ProjectCreate, ProjectUpdate
 from starlette import status
-from sqlalchemy import func
 from app.models.project import ProjectPriority, ProjectStatus
 
 
