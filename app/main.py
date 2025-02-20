@@ -8,6 +8,7 @@ import app.routes.user as User
 import app.routes.auth as Auth
 import app.routes.project as Project
 import app.routes.province as Province
+import app.routes.task as Task
 import starlette.status as status
 from app.routes.auth import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
@@ -70,4 +71,5 @@ app.include_router(Auth.router)
 app.include_router(Project.router)
 # province router
 app.include_router(Province.router)
-
+# task router
+app.include_router(Task.router)
