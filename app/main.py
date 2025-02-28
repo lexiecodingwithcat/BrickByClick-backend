@@ -9,6 +9,7 @@ import app.routes.auth as Auth
 import app.routes.project as Project
 import app.routes.province as Province
 import app.routes.task as Task
+# import app.routes.project as Project
 import starlette.status as status
 from app.routes.auth import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
@@ -73,3 +74,7 @@ app.include_router(Project.router)
 app.include_router(Province.router)
 # task router
 app.include_router(Task.router)
+
+
+# if __name__ == "main":
+#     uvicorn.run("app.main:app", host:"0.0.0.0", port=8081, reload=True)

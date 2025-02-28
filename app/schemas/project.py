@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
-from enum import Enum as PyEnum
+from typing import Optional, List
 from datetime import datetime
 from app.models.project import ProjectStatus, ProjectPriority
 
