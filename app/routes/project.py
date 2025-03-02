@@ -3,6 +3,7 @@ from typing import Annotated,List
 from sqlalchemy.orm import Session
 from app.models.project import Project
 from app.models.user import User
+from app.models.task import Task
 from app.models.project_task import ProjectTask
 from app.database import get_db
 from app.routes.auth import get_current_user
@@ -38,8 +39,8 @@ async def get_project_detail(id: int, db:db_dependence):
         )
      
     # task_ids
-    db_task_ids = db.query(ProjectTask.task_id).filter(projectTask.project_id == id).all();
-    task_ids_list = [task_id[0] for task_id in task_ids]
+    db_task_ids = db.query(ProjectTask.task_id).filter(ProjectTask.project_id == id).all();
+    task_ids_list = [task_id[0] for task_id in db_task_ids]
     tasks = []
     if task_ids_list:
         tasks = db.query(Task).filter(Task.id.in_(task_ids_list)).all()
