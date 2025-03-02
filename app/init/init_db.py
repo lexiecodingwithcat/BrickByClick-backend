@@ -335,8 +335,6 @@ def initialize_canadian_cities():
 # initialize pre-defined tasks
 def initialize_parent_tasks():
     try:
-       
-       
         predefined_tasks = [
     {
         "name": "Site Preparation and Excavation",

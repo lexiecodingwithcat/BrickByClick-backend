@@ -141,7 +141,7 @@ def delete_project(id:int, db:db_dependence,current_user:Annotated[User, Depends
     return db_project
 
 # create TASK, PROEJCT_TASK(DEPENDENCY)
-@router.post("/{id}/task", response_model= TaskBase)
+@router.post("/{id}/task", response_model= ProjectTaskBase)
 def add_task(id:int, db:db_dependence, task: TaskCreate):
     # Check if the project exists
     db_project = db.query(Project).filter(Project.id == id).first()
@@ -155,7 +155,7 @@ def add_task(id:int, db:db_dependence, task: TaskCreate):
     db_task = db.query(Task).filter(task.name == Task.name).first()
     if db_task is None:
         # add new task to TASK table
-        new_task = Task(parent_id=task.parent_id, name = task.name, company_id = task.company_id, sort_order= task.order)
+        new_task = Task(parent_id=task.parent_id, name = task.name, company_id = task.company_id, sort_order= task.sort_order)
         db.add(new_task)
         db.flush()
 
