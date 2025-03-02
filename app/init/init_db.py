@@ -9,6 +9,7 @@ from passlib.context import CryptContext
 from sqlalchemy.exc import SQLAlchemyError
 import os
 from app.models.user import Role
+from sqlalchemy import select
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 password = os.getenv("ADMIN_PASSWORD")
@@ -334,6 +335,8 @@ def initialize_canadian_cities():
 # initialize pre-defined tasks
 def initialize_parent_tasks():
     try:
+       
+       
         predefined_tasks = [
     {
         "name": "Site Preparation and Excavation",
@@ -351,22 +354,27 @@ def initialize_parent_tasks():
     },
 ]
         for parent_data in predefined_tasks:
-            parent_task = Task(
+            exsiting = db.query(Task).filter(Task.name == parent_data["name"]).first()
+
+            if not exsiting:
+                parent_task = Task(
             company_id=1,
             name=parent_data["name"],
             sort_order=predefined_tasks.index(parent_data) + 1
         )
-            db.add(parent_task)
+                db.add(parent_task)
             db.flush()  
      
             for child_data in parent_data["children"]:
-                child_task = Task(
+                existing = db.query(Task).filter(Task.name == child_data["name"]).first()
+                if not existing:
+                    child_task = Task(
                 company_id=1,
                 parent_id=parent_task.id,  
                 name=child_data["name"],
                 sort_order=child_data["sort_order"]
             )
-                db.add(child_task)
+                    db.add(child_task)
 
         db.commit() 
         print("Predefined tasks initialized successfully.")

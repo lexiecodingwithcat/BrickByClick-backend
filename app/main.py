@@ -36,6 +36,7 @@ user_dependency = Annotated[UserModel, Depends(get_current_user)]
 
 @app.on_event("startup")
 async def startup_event():
+    # initialize default countries
     initialize_default_countries()
     # initialize Canadian provinces
     initialize_canadian_province()
@@ -45,11 +46,9 @@ async def startup_event():
     initial_company()
     # initialize admin user
     initial_admin()
-    # initialize default countries
     # initialize predefined tasks
     initialize_parent_tasks()
-                                                                                                                                                                                                                                                                                                                                               
-
+                                                                                        
 @app.get("/", status_code=status.HTTP_200_OK)
 async def read_user(user: user_dependency, db: db_dependency):
     if user is None:
