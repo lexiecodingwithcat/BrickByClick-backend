@@ -3,6 +3,7 @@ from app.models.country import Country
 from app.models.province import Province
 from app.models.city import City
 from app.models.user import User
+from app.models.task import Task
 from app.models.company import Company
 from passlib.context import CryptContext
 from sqlalchemy.exc import SQLAlchemyError
@@ -326,5 +327,51 @@ def initialize_canadian_cities():
     except Exception as e:
         db.rollback()
         print(f"Unexpected error: {str(e)}")
+    finally:
+        db.close()
+
+
+# initialize pre-defined tasks
+def initialize_parent_tasks():
+    try:
+        predefined_tasks = [
+    {
+        "name": "Site Preparation and Excavation",
+        "children": [
+            {"name": "Survey and stake out property", "sort_order": 1},
+            {"name": "Clear site (remove trees, debris)", "sort_order": 2},
+        ]
+    },
+    {
+        "name": "Foundation",
+        "children": [
+            {"name": "Set up formwork for footings", "sort_order": 1},
+            {"name": "Pour concrete footings", "sort_order": 2},
+        ]
+    },
+]
+        for parent_data in predefined_tasks:
+            parent_task = Task(
+            company_id=1,
+            name=parent_data["name"],
+            sort_order=predefined_tasks.index(parent_data) + 1
+        )
+            db.add(parent_task)
+            db.flush()  
+     
+            for child_data in parent_data["children"]:
+                child_task = Task(
+                company_id=1,
+                parent_id=parent_task.id,  
+                name=child_data["name"],
+                sort_order=child_data["sort_order"]
+            )
+                db.add(child_task)
+
+        db.commit() 
+        print("Predefined tasks initialized successfully.")
+    except Exception as e:
+        db.rollback()
+        print(f"Error initializing parent tasks: {str(e)}")
     finally:
         db.close()

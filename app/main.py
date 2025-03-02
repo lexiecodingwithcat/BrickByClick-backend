@@ -19,6 +19,7 @@ from app.init.init_db import (
     initialize_default_countries,
     initialize_canadian_province,
     initialize_canadian_cities,
+    initialize_parent_tasks
 )
 import app.models
 
@@ -45,6 +46,8 @@ async def startup_event():
     # initialize admin user
     initial_admin()
     # initialize default countries
+    # initialize predefined tasks
+    initialize_parent_tasks()
                                                                                                                                                                                                                                                                                                                                                
 
 @app.get("/", status_code=status.HTTP_200_OK)
