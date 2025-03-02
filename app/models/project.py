@@ -24,7 +24,7 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     company_id = Column(Integer, ForeignKey("companies.id"), nullable= False, default = 1)
     name = Column(String(50), nullable=False, unique=True)
-    current_assignee = Column(Integer, ForeignKey("users.id"), nullable=True)
+    current_assignee = Column(Integer, ForeignKey("users.id"), nullable=True, default= None)
     priority = Column(Enum(ProjectPriority), nullable=False, default=ProjectPriority.LOW)
     address = Column(String(100), nullable=False)
     postal_code = Column(String(10), nullable = True)

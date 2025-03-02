@@ -18,7 +18,7 @@ class ProjectTaskBase(BaseModel):
 
 class ProjectTaskCreate(BaseModel):
     name:str = Field(...,max_length=50)
-    current_assignee:Optional[int]=None
+    current_assignee: Optional[int] = None
     priority: ProjectPriority= ProjectPriority.LOW
     address:str = Field(...,max_length= 100)
     postal_code: Optional[str]= Field(None, max_length=10)
@@ -29,9 +29,9 @@ class ProjectTaskCreate(BaseModel):
     start_date: Optional[datetime] = None
     estimated_duration:Optional[int] 
     task_ids: Optional[List[int]] = None
-    assignee_id : Optional[int] = None
-    company_id:Optional[int]
-    note: Optional[str]=Field(...,max_length=200)
+    # assignee_id : Optional[int] = None
+    company_id:Optional[int]=1
+    # note: Optional[str]=Field(...,max_length=200)
 
     class Config:
         from_attributes = True

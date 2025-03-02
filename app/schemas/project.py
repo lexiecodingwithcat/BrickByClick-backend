@@ -6,9 +6,9 @@ from app.models.project import ProjectStatus, ProjectPriority
 # schema for outputting project data
 class ProjectBase(BaseModel):
     id:int
-    company_id:int
+    company_id:Optional[int] = 1
     name:str = Field(...,max_length=50)
-    current_assignee:int
+    current_assignee: Optional[int] = None
     priority: ProjectPriority 
     address:str = Field(...,max_length= 100)
     postal_code: Optional[str]= Field(None, max_length=10)
@@ -27,7 +27,7 @@ class ProjectBase(BaseModel):
 # create project
 class ProjectCreate(BaseModel):
     name:str = Field(...,max_length=50)
-    current_assignee:int
+    current_assignee: Optional[int] = None
     priority: ProjectPriority= ProjectPriority.LOW
     address:str = Field(...,max_length= 100)
     postal_code: Optional[str]= Field(None, max_length=10)

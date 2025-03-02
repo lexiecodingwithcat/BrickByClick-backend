@@ -11,6 +11,7 @@ from app.schemas.project_task import ProjectTaskBase, ProjectTaskCreate
 from app.schemas.task import TaskCreate, TaskBase
 from starlette import status
 from app.models.project import ProjectPriority, ProjectStatus
+from app.models.project_task import TaskStatus
 
 
 router = APIRouter(tags=['projects'], prefix="/projects")
@@ -65,12 +66,12 @@ async def create_project(project: ProjectTaskCreate, db:db_dependence, current_u
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Project name already exists."
         )
-    new_project = Project(name= project.name,current_assignee=project.current_assignee,priority = project.priority,address = project.address, postal_code = project.postal_code,city_id = project.city_id, province_id = project.province_id,budget = project.budget,status= project.status, start_date = project.start_date, estimated_duration = project.estimated_duration )
+    new_project = Project(company_id = project.company_id, name= project.name,current_assignee=project.current_assignee,priority = project.priority,address = project.address, postal_code = project.postal_code,city_id = project.city_id, province_id = project.province_id,budget = project.budget,status= project.status, start_date = project.start_date, estimated_duration = project.estimated_duration )
     # add project into Project table
     db.add(new_project)
     db.flush()
     # add project id and task_id into project_task table
-    for task_id in project.tasks:
+    for task_id in project.task_ids:
         project_task = ProjectTask(
             project_id=new_project.id,
             task_id=task_id,
