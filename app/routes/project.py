@@ -88,7 +88,7 @@ async def create_project(project: ProjectTaskCreate, db:db_dependence, current_u
     return new_project
 
 
-# Project
+# Project ONLY
 @router.put("/{id}",response_model = ProjectBase)
 async def update_project(db:db_dependence, id:int, project:ProjectUpdate,current_user:Annotated[User, Depends(get_current_user)]):
     if not current_user.is_admin:
