@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:3000"
 
     # API URL
-    API_URL: str
+    # API_URL: str
 
     class Config:
         env_file = ".env"

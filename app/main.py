@@ -9,6 +9,7 @@ import app.routes.auth as Auth
 import app.routes.project as Project
 import app.routes.province as Province
 import app.routes.task as Task
+
 # import app.routes.project as Project
 import starlette.status as status
 from app.routes.auth import get_current_user
@@ -19,7 +20,7 @@ from app.init.init_db import (
     initialize_default_countries,
     initialize_canadian_province,
     initialize_canadian_cities,
-    initialize_parent_tasks
+    initialize_parent_tasks,
 )
 import app.models
 
@@ -31,7 +32,6 @@ Base.metadata.create_all(bind=engine)  # create all tables in database
 
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[UserModel, Depends(get_current_user)]
-
 
 
 @app.on_event("startup")
@@ -48,7 +48,8 @@ async def startup_event():
     initial_admin()
     # initialize predefined tasks
     initialize_parent_tasks()
-                                                                                        
+
+
 @app.get("/", status_code=status.HTTP_200_OK)
 async def read_user(user: user_dependency, db: db_dependency):
     if user is None:
@@ -79,4 +80,4 @@ app.include_router(Task.router)
 
 
 # if __name__ == "main":
-#     uvicorn.run("app.main:app", host:"0.0.0.0", port=8081, reload=True)
+#     uvicorn.run("app.main:app", host:"0.0.0.0", port=8080, reload=True)

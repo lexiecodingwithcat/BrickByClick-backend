@@ -8,7 +8,11 @@ from app.models.project_task import ProjectTask
 from app.database import get_db
 from app.routes.auth import get_current_admin
 from app.schemas.project import ProjectBase, ProjectCreate, ProjectUpdate
-from app.schemas.project_task import ProjectTaskBase, ProjectTaskCreate
+from app.schemas.project_task import (
+    ProjectTaskBase,
+    ProjectTaskCreate,
+    ProjectTaskUpdate,
+)
 from app.schemas.task import TaskCreate, TaskBase
 from starlette import status
 from app.models.project import ProjectPriority, ProjectStatus
@@ -220,21 +224,37 @@ async def add_task(id: int, db: db_dependence, task: TaskCreate):
 @router.put("/{id}/tasks")
 async def update_task(
     id: int,
-    task: TaskBase,
+    task_update: ProjectTaskUpdate,
     db: db_dependence,
     current_user: Annotated[User, Depends(get_current_admin)],
 ):
-    db_project_task = db.query(ProjectTask).filter(ProjectTask.id == id).first()
+    db_project_task = db.query(ProjectTask).filter(ProjectTask.task_id == id).first()
     if db_project_task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project task does not exist."
         )
-    if task.status is not None:
-        db_project_task.status = task.status
-    if task.budget is not None:
-        db_project_task.budget = task.budget
-    if task.amount_due is not None:
-        db_project_task.amount_due = task.amount_due
+    update_data = task_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_project_task, key, value)
+
     db.commit()
     db.refresh(db_project_task)
+    return db_project_task
+
+
+# delete project task
+@router.delete("/{id}/tasks")
+async def delete_task(
+    id: int,
+    db: db_dependence,
+    current_user: Annotated[User, Depends(get_current_admin)],
+):
+    db_project_task = db.query(ProjectTask).filter(ProjectTask.task_id == id).first()
+    if db_project_task is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project task does not exist."
+        )
+
+    db.delete(db_project_task)
+    db.commit()
     return db_project_task

@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
 from typing import Annotated
-from fastapi import Depends, HTTPException, APIRouter
+from fastapi import Depends, HTTPException, APIRouter, status, BackgroundTasks
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import get_db
-from fastapi import BackgroundTasks
-from app.core.email import email
+from app.core.email import send_email
 
 # includes common used http status code, make it easier to read
 from starlette import status
@@ -120,7 +119,7 @@ async def forget_password(
     db.refresh(db_user)
 
     background_tasks.add_task(
-        email.send_email,
+        send_email,
         email_to=user.email,
         subject="Verify your email",
         template_name="verification_code.html",
