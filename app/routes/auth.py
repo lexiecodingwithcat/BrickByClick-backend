@@ -36,6 +36,7 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 class CreateUserRequest(BaseModel):
     email: str
     password: str
+    company: str
 
 
 class ForgetPasswordRequest(BaseModel):
@@ -50,27 +51,9 @@ class Token(BaseModel):
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-async def register_user(user: CreateUserRequest, db: db_dependency):
-
-    # check if email is in the database
-    if db.query(User).filter(User.email == user.email).first():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Email already registered"
-        )
-
-    user = User(email=user.email, password=bcrypt_context.hash(user.password))
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return {"message": "User created successfully"}
-
-
 # new user signup
 @router.post("/signup", response_model=UserBase)
-async def create_user(
-    user: CreateUserRequest, company: CompanyCreate, db: db_dependency
-):
+async def create_user(user: CreateUserRequest, db: db_dependency):
     # check if the user already exists
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user is not None:
