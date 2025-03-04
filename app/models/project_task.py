@@ -24,8 +24,9 @@ class ProjectTask(Base):
     end_date = Column(DateTime(timezone=True), nullable=True)
     actual_end_date = Column(DateTime(timezone=True), nullable=True)
     budget = Column(Float, nullable=False)
-    amount_due = Column(Float, nullable=False, default = 0)
+    amount_due = Column(Float, nullable=False, default=0)
     dependency = Column(Integer, nullable=True)  # task id
+    duration = Column(Integer, nullable=False)  # duration in days
     notes = Column(String(200), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
