@@ -61,12 +61,12 @@ async def create_user(user: CreateUserRequest, db: db_dependency):
             status_code=status.HTTP_409_CONFLICT, detail="Email already registered"
         )
 
-    db_company = db.query(Company).filter(Company.name == company.name).first()
+    db_company = db.query(Company).filter(Company.name == user.company).first()
     if db_company is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Company already exists"
         )
-    new_company = Company(name=company.name)
+    new_company = Company(name=user.company)
     db.add(new_company)
     db.commit()
     db.refresh(new_company)
@@ -101,6 +101,7 @@ async def forget_password(
     db.commit()
     db.refresh(db_user)
 
+    # send email with verification code to the user
     background_tasks.add_task(
         send_email,
         email_to=user.email,
