@@ -51,9 +51,9 @@ class Token(BaseModel):
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
-# new user signup
+# new user register
 @router.post("/signup", response_model=UserBase)
-async def create_user(user: CreateUserRequest, db: db_dependency):
+async def register(user: CreateUserRequest, db: db_dependency):
     # check if the user already exists
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user is not None:
@@ -96,7 +96,7 @@ async def forget_password(
         )
     verification_code = str(random.randint(10000, 99999))
     db_user.verification_code = verification_code
-    db_user.expires_at = datetime.utcnow() + timedelta(minutes=5)
+    db_user.expires_at = datetime.utcnow() + timedelta(minutes=5)  # 5 minutes to verify
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

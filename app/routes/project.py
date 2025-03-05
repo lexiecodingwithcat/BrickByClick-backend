@@ -228,7 +228,7 @@ async def update_task(
     db: db_dependence,
     current_user: Annotated[User, Depends(get_current_admin)],
 ):
-    db_project_task = db.query(ProjectTask).filter(ProjectTask.task_id == id).first()
+    db_project_task = db.query(ProjectTask).filter(ProjectTask.project_id == id).first()
     if db_project_task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project task does not exist."

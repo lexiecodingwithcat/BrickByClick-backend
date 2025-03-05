@@ -40,7 +40,7 @@ class ProjectTaskCreate(BaseModel):
 
 
 class ProjectTaskUpdate(BaseModel):
-    project_id: int
+    task_id: int
     name: str = Field(..., max_length=50)
     current_assignee: Optional[int] = None
     priority: ProjectPriority = ProjectPriority.LOW
@@ -52,7 +52,6 @@ class ProjectTaskUpdate(BaseModel):
     status: ProjectStatus = ProjectStatus.PENDING
     start_date: Optional[datetime] = None
     estimated_duration: Optional[int]
-    task_ids: Optional[List[int]] = None
     assignee_id: Optional[int] = None
     company_id: Optional[int]
     note: Optional[str] = Field(..., max_length=200)
