@@ -142,6 +142,67 @@ async def reset_password(email: str, password: str, db: db_dependency):
     return db_user
 
 
+# send activate email
+@router.post("/send-activate-email", response_model=UserBase)
+async def send_activate_email(
+    email: str, background_tasks: BackgroundTasks, db: db_dependency
+):
+    db_user = db.query(User).filter(User.email == email).first()
+    if db_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email not found"
+        )
+    if db_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email is already activated"
+        )
+
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    token_data = {"sub": email, "exp": expire}
+    activation_token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
+
+    # activation link
+    activation_link = (
+        f"{settings.FRONTEND_URL}/activate-account?token={activation_token}"
+    )
+
+    # send email with activation link to the user
+    background_tasks.add_task(
+        send_email,
+        email_to=email,
+        subject="Activate your account",
+        template_name="activate_account.html",
+        data={"activation_link": activation_link},
+    )
+
+    return db_user
+
+
+# activate user account
+@router.get("/activate-account")
+async def activate_account(token: str, db: Session = Depends(db_dependency)):
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    email = payload.get("sub")
+    if email is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
+        )
+
+    db_user = db.query(User).filter(User.email == email).first()
+    if db_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+
+    if db_user.is_active:
+        return {"message": "Account is already activated"}
+
+    # activate the account
+    db_user.is_active = True
+    db.commit()
+    return {"message": "Account activated successfully"}
+
+
 # if the user is authenticated, return the token
 # OAuth2PasswordRequestForm is a class that FastAPI provides to extract the email and password from the request
 @router.post("/token", response_model=Token)

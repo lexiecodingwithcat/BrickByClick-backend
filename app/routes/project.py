@@ -153,12 +153,13 @@ async def delete_project(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project does not exist."
         )
-    # delete project
-    db.delete(db_project)
     # delete project tasks
     db_project_tasks = db.query(ProjectTask).filter(ProjectTask.project_id == id).all()
     for project_task in db_project_tasks:
         db.delete(project_task)
+
+    # delete project
+    db.delete(db_project)
     db.commit()
 
 
