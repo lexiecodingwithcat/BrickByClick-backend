@@ -141,7 +141,7 @@ async def update_project(
 
 
 # PROJECT_TASK, PROJECT
-@router.delete("/{id}")
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_project(
     id: int,
     db: db_dependence,
@@ -153,9 +153,13 @@ async def delete_project(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project does not exist."
         )
+    # delete project
     db.delete(db_project)
+    # delete project tasks
+    db_project_tasks = db.query(ProjectTask).filter(ProjectTask.project_id == id).all()
+    for project_task in db_project_tasks:
+        db.delete(project_task)
     db.commit()
-    return db_project
 
 
 # create TASK, PROEJCT_TASK(DEPENDENCY)
@@ -255,13 +259,18 @@ async def update_task(
 
 
 # delete project task
-@router.delete("/{id}/tasks")
+@router.delete("/{id}/tasks", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(
     id: int,
+    task_id: int,
     db: db_dependence,
     current_user: Annotated[User, Depends(get_current_admin)],
 ):
-    db_project_task = db.query(ProjectTask).filter(ProjectTask.task_id == id).first()
+    db_project_task = (
+        db.query(ProjectTask)
+        .filter(ProjectTask.task_id == task_id, ProjectTask.project_id == id)
+        .first()
+    )
     if db_project_task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project task does not exist."
@@ -269,4 +278,3 @@ async def delete_task(
 
     db.delete(db_project_task)
     db.commit()
-    return db_project_task
