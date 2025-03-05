@@ -221,7 +221,7 @@ async def add_task(id: int, db: db_dependence, task: TaskCreate):
 
 
 # PROEJCT_TASK
-@router.put("/{id}/tasks", response_model=ProjectTask)
+@router.put("/{id}/tasks", response_model=ProjectTaskBase)
 async def update_task(
     id: int,
     task_update: ProjectTaskUpdate,
