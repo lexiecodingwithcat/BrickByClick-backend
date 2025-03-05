@@ -115,26 +115,14 @@ async def update_project(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project does not exist."
         )
-    if project.name is not None:
-        db_project.name = project.name
-    if project.current_assignee is not None:
-        db_project.current_assignee = project.current_assignee
-    if project.priority is not None:
-        db_project.priority = project.priority
-    if project.address is not None:
-        db_project.address = project.address
-    if project.postal_code is not None:
-        db_project.postal_code = project.postal_code
-    if project.city_id is not None:
-        db_project.city_id = project.city_id
-    if project.province_id is not None:
-        db_project.province_id = project.province_id
-    if project.budget is not None:
-        db_project.budget = project.budget
-    if project.status is not None:
-        db_project.status = project.status
-    if project.actual_end_date is not None:
-        db_project.actual_end_date = project.actual_end_date
+
+    # Get only provided fields
+    update_data = project.dict(exclude_unset=True)
+
+    # Update the project fields
+    for key, value in update_data.items():
+        setattr(db_project, key, value)
+
     db.commit()
     db.refresh(db_project)
     return db_project
@@ -225,7 +213,7 @@ async def add_task(id: int, db: db_dependence, task: TaskCreate):
     return response
 
 
-# PROEJCT_TASK
+# PROJECT_TASK
 @router.put("/{id}/tasks", response_model=ProjectTaskBase)
 async def update_task(
     id: int,
