@@ -68,34 +68,27 @@ async def create_project(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Project name already exists."
         )
-    new_project = Project(
-        company_id=project.company_id,
-        name=project.name,
-        current_assignee=project.current_assignee,
-        priority=project.priority,
-        address=project.address,
-        postal_code=project.postal_code,
-        city_id=project.city_id,
-        province_id=project.province_id,
-        budget=project.budget,
-        status=project.status,
-        start_date=project.start_date,
-        estimated_duration=project.estimated_duration,
-    )
+
+    # Exclude task_ids from project
+    new_project = Project(**project.dict(exclude={"task_ids"}))
+
     # add project into Project table
     db.add(new_project)
     db.flush()
     # add project id and task_id into project_task table
-    for task_id in project.task_ids:
-        project_task = ProjectTask(
-            project_id=new_project.id,
-            task_id=task_id,
-            assignee_id=project.current_assignee,
-            status=TaskStatus.PENDING,
-            budget=0.0,
-            amount_due=0.0,
-        )
-        db.add(project_task)
+    if project.task_ids:
+        project_tasks = [
+            ProjectTask(
+                project_id=new_project.id,
+                task_id=task_id,
+                assignee_id=project.current_assignee,
+                status=TaskStatus.PENDING,
+                budget=0.0,
+                amount_due=0.0,
+            )
+            for task_id in project.task_ids
+        ]
+        db.add_all(project_tasks)
 
     db.commit()
     db.refresh(new_project)
