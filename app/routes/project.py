@@ -221,18 +221,30 @@ async def add_task(id: int, db: db_dependence, task: TaskCreate):
 
 
 # PROEJCT_TASK
-@router.put("/{id}/tasks")
+@router.put("/{id}/tasks", response_model=ProjectTask)
 async def update_task(
     id: int,
     task_update: ProjectTaskUpdate,
     db: db_dependence,
     current_user: Annotated[User, Depends(get_current_admin)],
 ):
-    db_project_task = db.query(ProjectTask).filter(ProjectTask.project_id == id).first()
+    # check if the project exists
+    db_project = db.query(Project).filter(Project.id == id).first()
+    if db_project is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project does not exist."
+        )
+
+    # check if the project task exists
+    db_project_task = (
+        db.query(ProjectTask).filter(ProjectTask.task_id == task_update.task_id).first()
+    )
     if db_project_task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project task does not exist."
         )
+
+    # update project task
     update_data = task_update.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_project_task, key, value)
