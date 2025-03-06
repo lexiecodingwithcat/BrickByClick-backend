@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status, BackgroundTasks
 from typing import Annotated, List
 from sqlalchemy.orm import Session
 from app.models.project import Project
@@ -7,6 +7,7 @@ from app.models.task import Task
 from app.models.project_task import ProjectTask
 from app.database import get_db
 from app.routes.auth import get_current_admin
+from app.schemas.notification import NotificationCreate
 from app.schemas.project import ProjectBase, ProjectCreate, ProjectUpdate
 from app.schemas.project_task import (
     ProjectTaskBase,
@@ -17,7 +18,7 @@ from app.schemas.task import TaskCreate, TaskBase
 from starlette import status
 from app.models.project import ProjectPriority, ProjectStatus
 from app.models.project_task import TaskStatus
-
+from app.core.email import send_email
 
 router = APIRouter(tags=["projects"], prefix="/projects")
 db_dependence = Annotated[Session, Depends(get_db)]
@@ -260,3 +261,40 @@ async def delete_task(
 
     db.delete(db_project_task)
     db.commit()
+
+
+# send email to assignee
+@router.post("/{id}/send-email", status_code=status.HTTP_204_NO_CONTENT)
+async def send_email_to_assignee(
+    id: int,
+    notification: NotificationCreate,
+    db: db_dependence,
+    background_tasks: BackgroundTasks,
+    current_user: Annotated[User, Depends(get_current_admin)],
+):
+    db_project = db.query(Project).filter(Project.id == id).first()
+    if db_project is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project does not exist."
+        )
+
+    # get assignee email
+    assignee_id = notification.to_user_id
+    assignee = db.query(User).filter(User.id == assignee_id).first()
+    if assignee is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Assignee does not exist."
+        )
+
+    notification.project_id = id
+    db.add(notification)
+    db.commit()
+
+    # send email
+    background_tasks.add_task(
+        send_email,
+        assignee.email,
+        subject=notification.title,
+        template_name="notification.html",
+        data={"title": notification.title, "content": notification.content},
+    )

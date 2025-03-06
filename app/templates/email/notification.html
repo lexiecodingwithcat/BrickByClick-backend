@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>{{ title }}</h1>
+</div>
+
+<div class="content">
+    <p>{{ content }}</p>
+
+</div>
+
+<div class="footer">
+    <p>This email was sent automatically. Please do not reply directly.</p>
+</div>
+{% endblock %}
