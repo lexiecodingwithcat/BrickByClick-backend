@@ -219,6 +219,13 @@ async def login_for_access_token(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user"
         )
+
+    # check if the user is active
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User is not active"
+        )
+
     # if there is a valid user, create a token
     token = create_access_token(
         form_data.username, timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
@@ -235,12 +242,11 @@ def authenticate_user(email: str, password: str, db):
     # check if the password matches the hashed password in the database
     if not bcrypt_context.verify(password, user.password):
         return False
+
     return user
 
 
-# create a JWT
-
-
+# create a JWT token
 def create_access_token(email: str, expires_delta: timedelta):
     expire = datetime.utcnow() + expires_delta
     encode = {"sub": email, "exp": expire}
@@ -249,8 +255,6 @@ def create_access_token(email: str, expires_delta: timedelta):
 
 
 # decode JWT to get the current user
-
-
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_bearer)], db: db_dependency
 ):
