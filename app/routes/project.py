@@ -34,7 +34,11 @@ async def get_projects(
 
 # projectTask detail: project detail, task list, gantt chart
 @router.get("/{id}", response_model=ProjectTaskBase)
-async def get_project_detail(id: int, db: db_dependence):
+async def get_project_detail(
+    id: int,
+    db: db_dependence,
+    current_user: Annotated[User, Depends(get_current_admin)],
+):
     db_project = db.query(Project).filter(Project.id == id).first()
 
     if db_project is None:
@@ -147,7 +151,12 @@ async def delete_project(
 
 # create TASK, PROEJCT_TASK(DEPENDENCY)
 @router.post("/{id}/tasks", response_model=ProjectTaskBase)
-async def add_task(id: int, db: db_dependence, task: TaskCreate):
+async def add_task(
+    id: int,
+    db: db_dependence,
+    task: TaskCreate,
+    current_user: Annotated[User, Depends(get_current_admin)],
+):
     # Check if the project exists
     db_project = db.query(Project).filter(Project.id == id).first()
     if db_project is None:
