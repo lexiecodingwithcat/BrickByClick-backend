@@ -1,3 +1,4 @@
+from datetime import timedelta
 from fastapi import APIRouter, HTTPException, Depends, status, BackgroundTasks
 from typing import Annotated, List
 from sqlalchemy.orm import Session
@@ -18,6 +19,7 @@ from app.schemas.task import TaskCreate, TaskBase
 from starlette import status
 from app.models.project import ProjectPriority, ProjectStatus
 from app.models.project_task import TaskStatus
+from app.models.project_tracking import ProjectTracking
 from app.core.email import send_email
 
 router = APIRouter(tags=["projects"], prefix="/projects")
@@ -247,6 +249,31 @@ async def update_task(
 
     db.commit()
     db.refresh(db_project_task)
+
+    # add project tracking
+    if task_update.assignee_id is not None:
+        db_project_tracking = (
+            db.query(ProjectTracking).filter(
+                ProjectTracking.project_id == id,
+                ProjectTracking.user_id == task_update.assignee_id,
+            )
+        ).first()
+        if db_project_tracking is None:
+            project_tracking = ProjectTracking(
+                project_id=id,
+                user_id=task_update.assignee_id,
+                start_date=task_update.start_date,
+                end_date=task_update.start_date
+                + timedelta(days=task_update.estimated_duration),
+            )
+            db.add(project_tracking)
+            db.commit()
+        else:
+            db_project_tracking.end_date = task_update.start_date + timedelta(
+                days=task_update.estimated_duration
+            )
+            db.commit()
+
     return db_project_task
 
 
@@ -268,6 +295,19 @@ async def delete_task(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project task does not exist."
         )
 
+    # delete project tracking
+    db_project_tracking = (
+        db.query(ProjectTracking)
+        .filter(
+            ProjectTracking.project_id == id,
+            ProjectTracking.user_id == db_project_task.assignee_id,
+        )
+        .first()
+    )
+    if db_project_tracking is not None:
+        db.delete(db_project_tracking)
+
+    # delete project task
     db.delete(db_project_task)
     db.commit()
 

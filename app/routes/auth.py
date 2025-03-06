@@ -9,7 +9,7 @@ from app.core.email import send_email
 # includes common used http status code, make it easier to read
 from starlette import status
 from app.database import SessionLocal
-from app.models.user import User
+from app.models.user import User, Role
 from app.models.company import Company
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -74,7 +74,12 @@ async def register(user: CreateUserRequest, db: db_dependency):
     # encrypt the password
     hashed_password = bcrypt_context.hash(user.password)
     new_user = User(
-        email=user.email, password=hashed_password, company_id=new_company.id
+        email=user.email,
+        password=hashed_password,
+        company_id=new_company.id,
+        is_admin=True,
+        role=Role.ADMIN,
+        is_active=False,
     )
     db.add(new_user)
     db.commit()
