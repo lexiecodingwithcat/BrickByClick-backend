@@ -15,7 +15,16 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from app.schemas.user import UserBase
-from app.schemas.company import CompanyCreate
+from app.schemas.auth import (
+    ActivateEmailResponse,
+    ResetPasswordResponse,
+    SignUpRequest,
+    ForgetPasswordRequest,
+    Token,
+    SignUpResponse,
+    ForgetPasswordResponse,
+    VerifyCodeResponse,
+)
 import random
 from app.core.settings import settings
 
@@ -32,29 +41,12 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 # we use this request to validate before submitting it to DB as a new user
 
-
-class CreateUserRequest(BaseModel):
-    email: str
-    password: str
-    company: str
-
-
-class ForgetPasswordRequest(BaseModel):
-    email: str
-
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    type: str
-
-
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
 # new user register
-@router.post("/signup", response_model=UserBase)
-async def register(user: CreateUserRequest, db: db_dependency):
+@router.post("/signup", response_model=SignUpResponse)
+async def register(user: SignUpRequest, db: db_dependency):
     # check if the user already exists
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user is not None:
@@ -86,11 +78,11 @@ async def register(user: CreateUserRequest, db: db_dependency):
     db.commit()
     db.refresh(new_user)
 
-    return new_user
+    return SignUpResponse(email=new_user.email, company=new_company.name)
 
 
 # forget password
-@router.post("/forget-password", response_model=UserBase)
+@router.post("/forget-password", response_model=ForgetPasswordResponse)
 async def forget_password(
     user: ForgetPasswordRequest, background_tasks: BackgroundTasks, db: db_dependency
 ):
@@ -115,11 +107,11 @@ async def forget_password(
         template_name="verification_code.html",
         data={"verification_code": verification_code},
     )
-    return db_user
+    return ForgetPasswordResponse(email=db_user.email, expires_at=db_user.expires_at)
 
 
 # verification code
-@router.post("/verify-code", response_model=UserBase)
+@router.post("/verify-code", response_model=VerifyCodeResponse)
 async def verify_code(code: str, db: db_dependency):
     db_user = db.query(User).filter(User.verification_code == code).first()
     if db_user is None:
@@ -130,11 +122,16 @@ async def verify_code(code: str, db: db_dependency):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Verification code expired"
         )
-    return db_user
+
+    return VerifyCodeResponse(
+        email=db_user.email,
+        verification_status="successful",
+        expires_at=db_user.expires_at,
+    )
 
 
 # reset password
-@router.post("/reset-password", response_model=UserBase)
+@router.post("/reset-password", response_model=ResetPasswordResponse)
 async def reset_password(email: str, password: str, db: db_dependency):
     db_user = db.query(User).filter(User.email == email).first()
     if db_user is None:
@@ -145,11 +142,13 @@ async def reset_password(email: str, password: str, db: db_dependency):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return db_user
+    return ResetPasswordResponse(
+        email=db_user.email, password_reset_status="successful"
+    )
 
 
 # send activate email
-@router.post("/send-activate-email", response_model=UserBase)
+@router.post("/send-activate-email", response_model=ActivateEmailResponse)
 async def send_activate_email(
     email: str, background_tasks: BackgroundTasks, db: db_dependency
 ):
@@ -181,7 +180,9 @@ async def send_activate_email(
         data={"activation_link": activation_link},
     )
 
-    return db_user
+    return ActivateEmailResponse(
+        email=email, status="success", message="Activation email sent successfully"
+    )
 
 
 # activate user account
