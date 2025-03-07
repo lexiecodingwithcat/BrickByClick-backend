@@ -23,7 +23,7 @@ async def get_users(
     current_user: Annotated[User, Depends(get_current_admin)],
 ):
     db_users = db.query(User).filter(User.is_admin == False).all()
-    return [UserBase.from_orm(user) for user in db_users]
+    return [UserBase.model_validate(user) for user in db_users]
 
 
 @router.get("/{id}", response_model=UserBase)

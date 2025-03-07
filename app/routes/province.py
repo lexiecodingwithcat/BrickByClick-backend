@@ -16,7 +16,7 @@ db_dependence = Annotated[Session, Depends(get_db)]
 @router.get("/", response_model=List[ProvinceBase])
 async def get_provinces(db: db_dependence):
     db_provinces = db.query(Province).all()
-    return [ProvinceBase.from_orm(province) for province in db_provinces]
+    return [ProvinceBase.model_validate(province) for province in db_provinces]
 
 
 @router.get("/{province_id}/cities", response_model=List[CityBase])
@@ -27,4 +27,4 @@ async def get_cities_by_province(db: db_dependence, province_id: int):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No cities found for this province.",
         )
-    return [CityBase.from_orm(city) for city in db_cities]
+    return [CityBase.model_validate(city) for city in db_cities]

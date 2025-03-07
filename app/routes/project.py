@@ -62,7 +62,7 @@ async def get_projects(
     db: db_dependence, current_user: Annotated[User, Depends(get_current_admin)]
 ):
     db_projects = db.query(Project).all()
-    return [ProjectBase.from_orm(project) for project in db_projects]
+    return [ProjectBase.model_validate(project) for project in db_projects]
 
 
 # projectTask detail: project detail, task list, gantt chart

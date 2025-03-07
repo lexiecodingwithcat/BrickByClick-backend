@@ -32,9 +32,9 @@ async def get_tasks(db: db_dependence):
     tasks_with_children = []
     for task in db_tasks:
         if task.parent_id is None:  # if task has no parent
-            task_data = TaskWithChildren.from_orm(task)
+            task_data = TaskWithChildren.model_validate(task)
             task_data.children = [
-                TaskBase.from_orm(child) for child in child_tasks.get(task.id, [])
+                TaskBase.model_validate(child) for child in child_tasks.get(task.id, [])
             ]
             tasks_with_children.append(task_data)
 
@@ -45,14 +45,14 @@ async def get_tasks(db: db_dependence):
 @router.get("/categories", response_model=List[TaskBase])
 async def get_categories(db: db_dependence):
     db_categories = db.query(Task).filter(Task.parent_id.is_(None)).all()
-    return [TaskBase.from_orm(task) for task in db_categories]
+    return [TaskBase.model_validate(task) for task in db_categories]
 
 
 # get subtasks based on category
 @router.get("/{id}/subtasks", response_model=List[TaskBase])
 async def get_subtasks_by_category(id: int, db: db_dependence):
     db_subtasks = db.query(Task).filter(Task.parent_id == id).all()
-    return [TaskBase.from_orm(task) for task in db_subtasks]
+    return [TaskBase.model_validate(task) for task in db_subtasks]
 
 
 # add task
