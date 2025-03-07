@@ -18,6 +18,39 @@ class ProjectTaskBase(BaseModel):
         from_attributes: True
 
 
+class ProjectTaskDetail(BaseModel):
+    project_id: int
+    task_id: int
+    assignee_id: Optional[int]
+    status: TaskStatus
+    start_date: Optional[datetime]
+    end_date: Optional[datetime]
+    actual_end_date: Optional[datetime]
+    budget: float
+    amount_due: float
+    dependency: Optional[int]
+    duration: int
+    notes: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class TaskWithProjectTask(BaseModel):
+    task: TaskBase
+    project_task: ProjectTaskDetail
+
+
+class ProjectWithTasks(BaseModel):
+    project: ProjectBase
+    tasks: List[TaskWithProjectTask]
+
+    class Config:
+        from_attributes: True
+
+
 class ProjectTaskCreate(BaseModel):
     name: str = Field(..., max_length=50)
     current_assignee: Optional[int] = None

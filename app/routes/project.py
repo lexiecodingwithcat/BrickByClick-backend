@@ -14,6 +14,8 @@ from app.schemas.project_task import (
     ProjectTaskBase,
     ProjectTaskCreate,
     ProjectTaskUpdate,
+    TaskWithProjectTask,
+    ProjectWithTasks,
 )
 from app.schemas.task import TaskCreate, TaskBase
 from starlette import status
@@ -64,7 +66,7 @@ async def get_projects(
 
 
 # projectTask detail: project detail, task list, gantt chart
-@router.get("/{id}", response_model=ProjectTaskBase)
+@router.get("/{id}", response_model=ProjectWithTasks)
 async def get_project_detail(
     id: int,
     db: db_dependence,
@@ -77,14 +79,17 @@ async def get_project_detail(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project does not exist"
         )
 
-    tasks = (
-        db.query(Task)
+    tasks_with_project_tasks = (
+        db.query(Task, ProjectTask)
         .join(ProjectTask, ProjectTask.task_id == Task.id)
         .filter(ProjectTask.project_id == id)
         .all()
     )
-
-    response = ProjectTaskBase(project=db_project, tasks=tasks)
+    tasks = [
+        TaskWithProjectTask(task=task, project_task=project_task)
+        for task, project_task in tasks_with_project_tasks
+    ]
+    response = ProjectWithTasks(project=db_project, tasks=tasks)
 
     return response
 
