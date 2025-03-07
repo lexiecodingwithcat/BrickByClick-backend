@@ -77,14 +77,13 @@ async def get_project_detail(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project does not exist"
         )
 
-    # task_ids
-    db_task_ids = (
-        db.query(ProjectTask.task_id).filter(ProjectTask.project_id == id).all()
+    tasks = (
+        db.query(Task)
+        .join(ProjectTask, ProjectTask.task_id == Task.id)
+        .filter(ProjectTask.project_id == id)
+        .all()
     )
-    task_ids_list = [task_id[0] for task_id in db_task_ids]
-    tasks = []
-    if task_ids_list:
-        tasks = db.query(Task).filter(Task.id.in_(task_ids_list)).all()
+
     response = ProjectTaskBase(project=db_project, tasks=tasks)
 
     return response
