@@ -31,12 +31,12 @@ db_dependence = Annotated[Session, Depends(get_db)]
 async def get_contractor_projects(
     db: db_dependence, current_user: Annotated[User, Depends(get_current_user)]
 ):
-    db_project_tasks = (
-        db.query(ProjectTask).filter(ProjectTask.assignee_id == current_user.id).all()
+    db_projects = (
+        db.query(Project)
+        .join(ProjectTask, ProjectTask.project_id == Project.id)
+        .filter(ProjectTask.assignee_id == current_user.id)
+        .all()
     )
-    project_ids = [project_task.project_id for project_task in db_project_tasks]
-    db_projects = db.query(Project).filter(Project.id.in_(project_ids)).all()
-
     result = []
     for project in db_projects:
         # get project tasks
