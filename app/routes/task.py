@@ -1,7 +1,7 @@
 from fastapi import HTTPException, APIRouter, Depends
 from typing import Annotated, List
 from app.database import get_db
-from app.schemas.task import TaskBase, TaskCreate
+from app.schemas.task import TaskBase, TaskCreate, TaskWithChildren
 from app.models.task import Task
 from app.models.user import User
 from app.routes.auth import get_current_admin
@@ -13,10 +13,32 @@ db_dependence = Annotated[Session, Depends(get_db)]
 
 
 # get all tasks
-@router.get("/", response_model=List[TaskBase])
+@router.get("/", response_model=List[TaskWithChildren])
 async def get_tasks(db: db_dependence):
+
     db_tasks = db.query(Task).all()
-    return [TaskBase.from_orm(task) for task in db_tasks]
+
+    # create a dictionary of tasks
+    child_tasks = {}
+
+    # get all child tasks for each parent task
+    for task in db_tasks:
+        if task.parent_id:
+            if task.parent_id not in child_tasks:
+                child_tasks[task.parent_id] = []
+            child_tasks[task.parent_id].append(task)
+
+    # get all top-level tasks
+    tasks_with_children = []
+    for task in db_tasks:
+        if task.parent_id is None:  # if task has no parent
+            task_data = TaskWithChildren.from_orm(task)
+            task_data.children = [
+                TaskBase.from_orm(child) for child in child_tasks.get(task.id, [])
+            ]
+            tasks_with_children.append(task_data)
+
+    return tasks_with_children
 
 
 # get only categories
