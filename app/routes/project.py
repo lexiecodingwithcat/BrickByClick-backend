@@ -7,7 +7,7 @@ from app.models.user import User
 from app.models.task import Task
 from app.models.project_task import ProjectTask
 from app.database import get_db
-from app.routes.auth import get_current_admin
+from app.routes.auth import get_current_admin, get_current_user
 from app.schemas.notification import NotificationCreate
 from app.schemas.project import ProjectBase, ProjectCreate, ProjectUpdate
 from app.schemas.project_task import (
@@ -24,6 +24,35 @@ from app.core.email import send_email
 
 router = APIRouter(tags=["projects"], prefix="/projects")
 db_dependence = Annotated[Session, Depends(get_db)]
+
+
+# contractor project list
+@router.get("/contractor", response_model=List[ProjectTaskBase])
+async def get_contractor_projects(
+    db: db_dependence, current_user: Annotated[User, Depends(get_current_user)]
+):
+    db_project_tasks = (
+        db.query(ProjectTask).filter(ProjectTask.assignee_id == current_user.id).all()
+    )
+    project_ids = [project_task.project_id for project_task in db_project_tasks]
+    db_projects = db.query(Project).filter(Project.id.in_(project_ids)).all()
+
+    result = []
+    for project in db_projects:
+        # get project tasks
+        tasks = (
+            db.query(Task)
+            .join(ProjectTask, ProjectTask.task_id == Task.id)
+            .filter(ProjectTask.project_id == project.id)
+            .all()
+        )
+        project_data = ProjectTaskBase(
+            project=project,
+            tasks=tasks,
+        )
+        result.append(project_data)
+
+    return result
 
 
 @router.get("/", response_model=List[ProjectBase])

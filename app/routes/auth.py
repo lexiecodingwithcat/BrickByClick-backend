@@ -46,6 +46,7 @@ class ForgetPasswordRequest(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    type: str
 
 
 db_dependency = Annotated[Session, Depends(get_db)]
@@ -230,7 +231,11 @@ async def login_for_access_token(
     token = create_access_token(
         form_data.username, timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
     )
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "type": "admin" if user.is_admin else "contractor",
+    }
 
 
 # check whether the user is authenticated
