@@ -22,7 +22,6 @@ def initial_company():
         if not existing:
             # create the default company
             company = Company(
-                id=1,
                 name="Raynow Homes",
                 address="14 Ave NW",
                 postal_code="T2E 1B7",

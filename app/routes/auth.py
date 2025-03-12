@@ -46,7 +46,9 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 # new user register
 @router.post("/signup", response_model=SignUpResponse)
-async def register(user: SignUpRequest, db: db_dependency):
+async def register(
+    user: SignUpRequest, background_tasks: BackgroundTasks, db: db_dependency
+):
     # check if the user already exists
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user is not None:
@@ -78,7 +80,34 @@ async def register(user: SignUpRequest, db: db_dependency):
     db.commit()
     db.refresh(new_user)
 
-    return SignUpResponse(email=new_user.email, company=new_company.name)
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    token_data = {"sub": user.email, "exp": expire}
+    activation_token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
+
+    # activation link
+    activation_link = (
+        f"{settings.FRONTEND_URL}/activate-account?token={activation_token}"
+    )
+
+    # send email with activation link to the user
+    background_tasks.add_task(
+        send_email,
+        email_to=user.email,
+        subject="Activate your account",
+        template_name="activate_account",
+        data={"activation_link": activation_link},
+    )
+    # print(f"sender email: {settings.MAIL_FROM}")
+    # print(f"sender email: {settings.MAIL_USERNAME}")
+    # print(f"sender email: {settings.MAIL_PORT}")
+    # print(f"sender email: {settings.MAIL_SERVER}")
+    # print(f"sender email: {settings.MAIL_FROM_NAME}")
+    # print(f"sender email: {settings.MAIL_PASSWORD}")
+    # print(f"activation_link: {activation_link}")
+
+    return SignUpResponse(
+        email=user.email, company=user.company, created_at=new_user.created_at
+    )
 
 
 # forget password
@@ -104,7 +133,7 @@ async def forget_password(
         send_email,
         email_to=user.email,
         subject="Verify your email",
-        template_name="verification_code.html",
+        template_name="verification_code",
         data={"verification_code": verification_code},
     )
     return ForgetPasswordResponse(email=db_user.email, expires_at=db_user.expires_at)
@@ -176,7 +205,7 @@ async def send_activate_email(
         send_email,
         email_to=email,
         subject="Activate your account",
-        template_name="activate_account.html",
+        template_name="activate_account",
         data={"activation_link": activation_link},
     )
 

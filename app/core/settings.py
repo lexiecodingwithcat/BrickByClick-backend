@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     MAIL_PORT: int = 587
     MAIL_SERVER: str
     MAIL_FROM_NAME: str
+
     FRONTEND_URL: str = "http://localhost:3000"
 
     # API URL
