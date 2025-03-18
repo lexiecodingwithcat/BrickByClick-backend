@@ -53,19 +53,19 @@ class ProjectWithTasks(BaseModel):
 
 class ProjectTaskCreate(BaseModel):
     name: str = Field(..., max_length=50)
-    current_assignee: Optional[int] = None
-    priority: ProjectPriority = ProjectPriority.LOW
+    current_assignee: int = Field(default=1)
+    priority: Optional[ProjectPriority] = Field(default=ProjectPriority.LOW)
     address: str = Field(..., max_length=100)
     postal_code: Optional[str] = Field(None, max_length=10)
     city_id: int
     province_id: int
     budget: float
-    status: ProjectStatus = ProjectStatus.PENDING
-    start_date: Optional[datetime] = None
-    estimated_duration: Optional[int]
+    status: Optional[ProjectStatus] = Field(default=ProjectStatus.PENDING)
+    start_date: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    estimated_duration: Optional[int] = Field(default=1)
     task_ids: Optional[List[int]] = None
     # assignee_id : Optional[int] = None
-    company_id: Optional[int] = 1
+    company_id: int = Field(default=1)
     # note: Optional[str]=Field(...,max_length=200)
 
     class Config:

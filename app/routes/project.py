@@ -29,7 +29,7 @@ db_dependence = Annotated[Session, Depends(get_db)]
 
 
 # contractor project list
-@router.get("/contractor", response_model=List[ProjectTaskBase])
+@router.post("/contractor", response_model=List[ProjectTaskBase])
 async def get_contractor_projects(
     db: db_dependence, current_user: Annotated[User, Depends(get_current_user)]
 ):
@@ -53,12 +53,12 @@ async def get_contractor_projects(
             tasks=tasks,
         )
         result.append(project_data)
-
+    # print("result:", result)
     return result
 
 
-@router.get("/", response_model=List[ProjectBase])
-async def get_projects(
+@router.post("/all", response_model=List[ProjectBase])
+async def get_all_projects(
     db: db_dependence, current_user: Annotated[User, Depends(get_current_admin)]
 ):
     db_projects = db.query(Project).all()
@@ -66,7 +66,7 @@ async def get_projects(
 
 
 # projectTask detail: project detail, task list, gantt chart
-@router.get("/{id}", response_model=ProjectWithTasks)
+@router.post("/{id}", response_model=ProjectWithTasks)
 async def get_project_detail(
     id: int,
     db: db_dependence,
@@ -94,7 +94,7 @@ async def get_project_detail(
     return response
 
 
-# PROJECT, PROJECT_TASK
+# Create PROJECT, PROJECT_TASK
 @router.post("/", response_model=ProjectBase)
 async def create_project(
     project: ProjectTaskCreate,
@@ -104,17 +104,29 @@ async def create_project(
 
     # check project existence
     db_project = db.query(Project).filter(Project.name == project.name).first()
+
     if db_project is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Project name already exists."
         )
+    print("project:", project.model_dump())
+
+    # set company_id from current_user
+    project.company_id = current_user.company_id
 
     # Exclude task_ids from project
-    new_project = Project(**project.dict(exclude={"task_ids"}))
+    new_project = Project(**project.model_dump(exclude={"task_ids"}))
 
     # add project into Project table
-    db.add(new_project)
-    db.flush()
+    try:
+        db.add(new_project)
+        db.commit()
+        db.refresh(new_project)
+    except Exception as e:
+        db.rollback()  # rollback the transaction
+        print("Database Commit Error:", str(e))
+        raise HTTPException(status_code=500, detail="Database commit failed")
+
     # add project id and task_id into project_task table
     if project.task_ids:
         project_tasks = [
@@ -125,13 +137,16 @@ async def create_project(
                 status=TaskStatus.PENDING,
                 budget=0.0,
                 amount_due=0.0,
+                duration=project.estimated_duration,
+                start_date=project.start_date,
+                end_date=project.start_date
+                + timedelta(days=project.estimated_duration),
             )
             for task_id in project.task_ids
         ]
         db.add_all(project_tasks)
+        db.commit()
 
-    db.commit()
-    db.refresh(new_project)
     return new_project
 
 
@@ -150,7 +165,7 @@ async def update_project(
         )
 
     # Get only provided fields
-    update_data = project.dict(exclude_unset=True)
+    update_data = project.model_dump(exclude_unset=True)
 
     # Update the project fields
     for key, value in update_data.items():

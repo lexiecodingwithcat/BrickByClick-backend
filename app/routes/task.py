@@ -13,8 +13,8 @@ db_dependence = Annotated[Session, Depends(get_db)]
 
 
 # get all tasks
-@router.get("/", response_model=List[TaskWithChildren])
-async def get_tasks(db: db_dependence):
+@router.post("/all", response_model=List[TaskWithChildren])
+async def get_all_tasks(db: db_dependence):
 
     db_tasks = db.query(Task).all()
 
@@ -42,14 +42,14 @@ async def get_tasks(db: db_dependence):
 
 
 # get only categories
-@router.get("/categories", response_model=List[TaskBase])
+@router.post("/categories", response_model=List[TaskBase])
 async def get_categories(db: db_dependence):
     db_categories = db.query(Task).filter(Task.parent_id.is_(None)).all()
     return [TaskBase.model_validate(task) for task in db_categories]
 
 
 # get subtasks based on category
-@router.get("/{id}/subtasks", response_model=List[TaskBase])
+@router.post("/{id}/subtasks", response_model=List[TaskBase])
 async def get_subtasks_by_category(id: int, db: db_dependence):
     db_subtasks = db.query(Task).filter(Task.parent_id == id).all()
     return [TaskBase.model_validate(task) for task in db_subtasks]

@@ -13,13 +13,13 @@ router = APIRouter(tags=["provinces"], prefix="/provinces")
 db_dependence = Annotated[Session, Depends(get_db)]
 
 
-@router.get("/", response_model=List[ProvinceBase])
-async def get_provinces(db: db_dependence):
+@router.post("/", response_model=List[ProvinceBase])
+async def get_all_provinces(db: db_dependence):
     db_provinces = db.query(Province).all()
     return [ProvinceBase.model_validate(province) for province in db_provinces]
 
 
-@router.get("/{province_id}/cities", response_model=List[CityBase])
+@router.post("/{province_id}/cities", response_model=List[CityBase])
 async def get_cities_by_province(db: db_dependence, province_id: int):
     db_cities = db.query(City).filter(City.province_id == province_id).all()
     if not db_cities:

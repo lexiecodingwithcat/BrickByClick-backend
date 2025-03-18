@@ -215,7 +215,7 @@ async def send_activate_email(
 
 
 # activate user account
-@router.get("/activate-account")
+@router.post("/activate-account")
 async def activate_account(token: str, db: Session = Depends(db_dependency)):
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     email = payload.get("sub")
