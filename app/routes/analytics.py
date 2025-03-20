@@ -125,7 +125,9 @@ async def get_project_detail_comparison(
     total_tasks = db.query(ProjectTask).filter(ProjectTask.project_id == id).count()
     completed_tasks = (
         db.query(ProjectTask)
-        .filter(ProjectTask.project_id == id, ProjectTask.status == "completed")
+        .filter(
+            ProjectTask.project_id == id, ProjectTask.status == ProjectStatus.COMPLETED
+        )
         .count()
     )
     completion = (
