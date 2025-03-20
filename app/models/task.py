@@ -7,7 +7,7 @@ class Task(Base):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    company_id = Column(Integer, ForeignKey("companies.id"), nullable= False)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable= True, default=1)
     parent_id = Column(
         Integer, ForeignKey("tasks.id"), nullable=True, default=None
     )  # parent task id

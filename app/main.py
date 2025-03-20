@@ -6,6 +6,12 @@ from sqlalchemy.orm import Session
 from app.models.user import User as UserModel
 import app.routes.user as User
 import app.routes.auth as Auth
+import app.routes.project as Project
+import app.routes.province as Province
+import app.routes.task as Task
+import app.routes.analytics as Analytics
+
+# import app.routes.project as Project
 import starlette.status as status
 from app.routes.auth import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +21,7 @@ from app.init.init_db import (
     initialize_default_countries,
     initialize_canadian_province,
     initialize_canadian_cities,
+    initialize_parent_tasks,
 )
 import app.models
 
@@ -28,9 +35,9 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[UserModel, Depends(get_current_user)]
 
 
-
 @app.on_event("startup")
 async def startup_event():
+    # initialize default countries
     initialize_default_countries()
     # initialize Canadian provinces
     initialize_canadian_province()
@@ -40,7 +47,8 @@ async def startup_event():
     initial_company()
     # initialize admin user
     initial_admin()
-    # initialize default countries
+    # initialize predefined tasks
+    initialize_parent_tasks()
 
 
 @app.get("/", status_code=status.HTTP_200_OK)
@@ -64,3 +72,14 @@ app.add_middleware(
 app.include_router(User.router)
 # auth router
 app.include_router(Auth.router)
+# project router
+app.include_router(Project.router)
+# province router
+app.include_router(Province.router)
+# task router
+app.include_router(Task.router)
+# analytics router
+app.include_router(Analytics.router)
+
+# if __name__ == "main":
+#     uvicorn.run("app.main:app", host:"0.0.0.0", port=8080, reload=True)

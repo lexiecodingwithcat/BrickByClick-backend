@@ -3,35 +3,37 @@ from app.models.country import Country
 from app.models.province import Province
 from app.models.city import City
 from app.models.user import User
+from app.models.task import Task
 from app.models.company import Company
 from passlib.context import CryptContext
 from sqlalchemy.exc import SQLAlchemyError
-import os
 from app.models.user import Role
+from sqlalchemy import select
+from app.core.settings import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-password = os.getenv("ADMIN_PASSWORD")
+password = settings.ADMIN_PASSWORD
 db = SessionLocal()
+
 
 def initial_company():
     try:
-        existing = db.query(Company).filter(Company.id ==1).first()
+        existing = db.query(Company).filter(Company.id == 1).first()
         if not existing:
             # create the default company
             company = Company(
-                id=1,
-                name = 'Raynow Homes',
-                address = '14 Ave NW',
+                name="Raynow Homes",
+                address="14 Ave NW",
                 postal_code="T2E 1B7",
-                city_id = 1,
-                province_id = 2,
-                phone_number= '403-891-5668'
-
+                city_id=1,
+                province_id=2,
+                phone_number="403-891-5668",
             )
             db.add(company)
             db.commit()
     finally:
         db.close()
+
 
 # initialize admin user function
 def initial_admin():
@@ -47,9 +49,9 @@ def initial_admin():
                 email="test@example.com",
                 password=hashed_password,
                 is_admin=True,
-                is_active = True,
-                company_id = 1,
-                role = Role.ADMIN
+                is_active=True,
+                company_id=1,
+                role=Role.ADMIN,
             )
             db.add(admin)
             db.commit()
@@ -326,5 +328,141 @@ def initialize_canadian_cities():
     except Exception as e:
         db.rollback()
         print(f"Unexpected error: {str(e)}")
+    finally:
+        db.close()
+
+
+# initialize pre-defined tasks
+def initialize_parent_tasks():
+    try:
+        predefined_tasks = [
+            {
+                "name": "Site Prep & Excavation",
+                "children": [
+                    {"name": "Survey & stake property", "sort_order": 1},
+                    {"name": "Clear site (trees, debris)", "sort_order": 2},
+                    {"name": "Excavate for foundation", "sort_order": 3},
+                ],
+            },
+            {
+                "name": "Foundation",
+                "children": [
+                    {"name": "Set up formwork", "sort_order": 1},
+                    {"name": "Pour footings", "sort_order": 2},
+                    {"name": "Cure concrete", "sort_order": 3},
+                ],
+            },
+            {
+                "name": "Framing",
+                "children": [
+                    {"name": "Install floor system", "sort_order": 1},
+                    {"name": "Frame walls & roof", "sort_order": 2},
+                    {"name": "Install sheathing", "sort_order": 3},
+                ],
+            },
+            {
+                "name": "Roofing",
+                "children": [
+                    {"name": "Install underlayment", "sort_order": 1},
+                    {"name": "Lay shingles/metal roof", "sort_order": 2},
+                    {"name": "Seal & inspect", "sort_order": 3},
+                ],
+            },
+            {
+                "name": "Exterior Work",
+                "children": [
+                    {"name": "Install windows & doors", "sort_order": 1},
+                    {"name": "Apply siding & trim", "sort_order": 2},
+                    {"name": "Paint & finish", "sort_order": 3},
+                ],
+            },
+            {
+                "name": "Plumbing",
+                "children": [
+                    {"name": "Rough-in pipes", "sort_order": 1},
+                    {"name": "Install fixtures", "sort_order": 2},
+                    {"name": "Test & inspect", "sort_order": 3},
+                ],
+            },
+            {
+                "name": "Electrical",
+                "children": [
+                    {"name": "Run wiring", "sort_order": 1},
+                    {"name": "Install outlets & switches", "sort_order": 2},
+                    {"name": "Connect panel & test", "sort_order": 3},
+                ],
+            },
+            {
+                "name": "HVAC",
+                "children": [
+                    {"name": "Install ductwork", "sort_order": 1},
+                    {"name": "Set up furnace & AC", "sort_order": 2},
+                    {"name": "Test system", "sort_order": 3},
+                ],
+            },
+            {
+                "name": "Interior Finishing",
+                "children": [
+                    {"name": "Hang drywall", "sort_order": 1},
+                    {"name": "Paint & texture", "sort_order": 2},
+                    {"name": "Install trim & doors", "sort_order": 3},
+                ],
+            },
+            {
+                "name": "Flooring",
+                "children": [
+                    {"name": "Install subfloor", "sort_order": 1},
+                    {"name": "Lay tile/carpet/wood", "sort_order": 2},
+                    {"name": "Seal & finish", "sort_order": 3},
+                ],
+            },
+            {
+                "name": "Final Touches",
+                "children": [
+                    {"name": "Install appliances", "sort_order": 1},
+                    {"name": "Final plumbing & electrical", "sort_order": 2},
+                    {"name": "Inspect & clean up", "sort_order": 3},
+                ],
+            },
+            {
+                "name": "Landscaping",
+                "children": [
+                    {"name": "Grade & prepare yard", "sort_order": 1},
+                    {"name": "Install sod & plants", "sort_order": 2},
+                    {"name": "Pave driveway & paths", "sort_order": 3},
+                ],
+            },
+        ]
+
+        for parent_data in predefined_tasks:
+            exsiting = db.query(Task).filter(Task.name == parent_data["name"]).first()
+
+            if not exsiting:
+                parent_task = Task(
+                    company_id=1,
+                    name=parent_data["name"],
+                    sort_order=predefined_tasks.index(parent_data) + 1,
+                )
+                db.add(parent_task)
+            db.flush()
+
+            for child_data in parent_data["children"]:
+                existing = (
+                    db.query(Task).filter(Task.name == child_data["name"]).first()
+                )
+                if not existing:
+                    child_task = Task(
+                        company_id=1,
+                        parent_id=parent_task.id,
+                        name=child_data["name"],
+                        sort_order=child_data["sort_order"],
+                    )
+                    db.add(child_task)
+
+        db.commit()
+        print("Predefined tasks initialized successfully.")
+    except Exception as e:
+        db.rollback()
+        print(f"Error initializing parent tasks: {str(e)}")
     finally:
         db.close()
