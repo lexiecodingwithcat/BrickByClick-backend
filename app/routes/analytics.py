@@ -92,17 +92,18 @@ async def get_projects_budget_comparison(
 
     project_data = []
     for project in projects:
-        extra_budget = (
+        # sum of all task budgets for the project
+        actual_budget = (
             db.query(func.sum(ProjectTask.budget))
             .filter(ProjectTask.project_id == project.id)
             .scalar()
-        ) or 0  # 处理 None 情况
+        ) or 0  # default to 0 if no tasks
 
         project_data.append(
             {
                 "name": project.name,
-                "budget": project.budget,
-                "extra_budget": extra_budget,
+                "estimate_budget": project.budget,
+                "actual_budget": actual_budget,
             }
         )
 
