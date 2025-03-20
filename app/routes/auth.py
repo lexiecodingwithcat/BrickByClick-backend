@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.core.email import send_email
+from datetime import datetime, timezone
 
 # includes common used http status code, make it easier to read
 from starlette import status
@@ -20,6 +21,8 @@ from app.schemas.auth import (
     ResetPasswordResponse,
     SignUpRequest,
     ForgetPasswordRequest,
+    ResetPasswordRequest,
+    ActivateRequest,
     Token,
     SignUpResponse,
     ForgetPasswordResponse,
@@ -142,12 +145,13 @@ async def forget_password(
 # verification code
 @router.post("/verify-code", response_model=VerifyCodeResponse)
 async def verify_code(code: str, db: db_dependency):
+    print(code)
     db_user = db.query(User).filter(User.verification_code == code).first()
     if db_user is None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Invalid verification code"
         )
-    if db_user.expires_at < datetime.utcnow():
+    if db_user.expires_at < datetime.now(timezone.utc):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Verification code expired"
         )
@@ -161,13 +165,13 @@ async def verify_code(code: str, db: db_dependency):
 
 # reset password
 @router.post("/reset-password", response_model=ResetPasswordResponse)
-async def reset_password(email: str, password: str, db: db_dependency):
-    db_user = db.query(User).filter(User.email == email).first()
+async def reset_password(user: ResetPasswordRequest, db: db_dependency):
+    db_user = db.query(User).filter(User.email == user.email).first()
     if db_user is None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Email not found"
         )
-    db_user.password = bcrypt_context.hash(password)
+    db_user.password = bcrypt_context.hash(user.password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -177,7 +181,7 @@ async def reset_password(email: str, password: str, db: db_dependency):
 
 
 # send activate email
-@router.post("/send-activate-email", response_model=ActivateEmailResponse)
+#@router.post("/send-activate-email", response_model=ActivateEmailResponse)
 async def send_activate_email(
     email: str, background_tasks: BackgroundTasks, db: db_dependency
 ):
@@ -216,8 +220,9 @@ async def send_activate_email(
 
 # activate user account
 @router.post("/activate-account")
-async def activate_account(token: str, db: Session = Depends(db_dependency)):
-    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+async def activate_account(req: ActivateRequest, db: db_dependency):
+    print(req)
+    payload = jwt.decode(req.token, SECRET_KEY, algorithms=[ALGORITHM])
     email = payload.get("sub")
     if email is None:
         raise HTTPException(

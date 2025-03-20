@@ -9,6 +9,7 @@ import app.routes.auth as Auth
 import app.routes.project as Project
 import app.routes.province as Province
 import app.routes.task as Task
+import app.routes.analytics as Analytics
 
 # import app.routes.project as Project
 import starlette.status as status
@@ -77,7 +78,8 @@ app.include_router(Project.router)
 app.include_router(Province.router)
 # task router
 app.include_router(Task.router)
-
+# analytics router
+app.include_router(Analytics.router)
 
 # if __name__ == "main":
 #     uvicorn.run("app.main:app", host:"0.0.0.0", port=8080, reload=True)
