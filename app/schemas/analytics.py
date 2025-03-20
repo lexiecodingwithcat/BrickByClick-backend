@@ -10,7 +10,8 @@ class ProjectDurationResponse(BaseModel):
 
 class ProjectBudgetResponse(BaseModel):
     name: str
-    budget: float
+    estimate_budget: float
+    actual_budget: float
 
 
 class TaskBudgetResponse(BaseModel):

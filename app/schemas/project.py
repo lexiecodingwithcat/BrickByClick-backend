@@ -21,6 +21,7 @@ class ProjectBase(BaseModel):
     estimated_duration: Optional[int] = None
     end_date: Optional[datetime] = None
     actual_end_date: Optional[datetime] = None
+    actual_budget: Optional[float] = None
 
     class Config:
         from_attributes = True

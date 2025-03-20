@@ -1,6 +1,7 @@
 from datetime import datetime
 from fastapi import HTTPException, APIRouter, Depends, Query
 from typing import Annotated, List, Optional
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.project_task import ProjectTask
@@ -89,7 +90,23 @@ async def get_projects_budget_comparison(
     if not projects:
         raise HTTPException(status_code=404, detail="No projects found")
 
-    return [{"name": project.name, "budget": project.budget} for project in projects]
+    project_data = []
+    for project in projects:
+        extra_budget = (
+            db.query(func.sum(ProjectTask.budget))
+            .filter(ProjectTask.project_id == project.id)
+            .scalar()
+        ) or 0  # 处理 None 情况
+
+        project_data.append(
+            {
+                "name": project.name,
+                "budget": project.budget,
+                "extra_budget": extra_budget,
+            }
+        )
+
+    return project_data
 
 
 @router.post("/{id}", response_model=ProjectSummaryResponse)

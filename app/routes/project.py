@@ -1,6 +1,7 @@
 from datetime import timedelta
 from fastapi import APIRouter, HTTPException, Depends, status, BackgroundTasks
 from typing import Annotated, List
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.models.project import Project
 from app.models.user import User
@@ -79,6 +80,13 @@ async def get_project_detail(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project does not exist"
         )
 
+    # Calculate the total budget of the project, it is actual budget of the project
+    actual_budget = (
+        db.query(func.sum(ProjectTask.budget))
+        .filter(ProjectTask.project_id == id)
+        .scalar()
+    ) or 0  # if there is no budget, set it to 0
+
     tasks_with_project_tasks = (
         db.query(Task, ProjectTask)
         .join(ProjectTask, ProjectTask.task_id == Task.id)
@@ -89,6 +97,9 @@ async def get_project_detail(
         TaskWithProjectTask(task=task, project_task=project_task)
         for task, project_task in tasks_with_project_tasks
     ]
+
+    db_project.actual_budget = actual_budget
+
     response = ProjectWithTasks(project=db_project, tasks=tasks)
 
     return response
