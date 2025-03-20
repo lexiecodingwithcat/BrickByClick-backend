@@ -154,7 +154,7 @@ async def get_project_detail_comparison(
                 "duration": (
                     (actual_end_date - start_date).days
                     if actual_end_date and start_date
-                    else duration
+                    else 0
                 ),
             }
             for name, duration, actual_end_date, start_date in task_durations
