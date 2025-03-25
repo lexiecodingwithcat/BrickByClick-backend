@@ -14,9 +14,12 @@ db_dependence = Annotated[Session, Depends(get_db)]
 
 # get all tasks
 @router.post("/all", response_model=List[TaskWithChildren])
-async def get_all_tasks(db: db_dependence):
+async def get_all_tasks(
+    db: db_dependence,
+    current_user: Annotated[User, Depends(get_current_admin)],
+):
 
-    db_tasks = db.query(Task).all()
+    db_tasks = db.query(Task).filter(Task.company_id == current_user.company_id).all()
 
     # create a dictionary of tasks
     child_tasks = {}
@@ -43,8 +46,14 @@ async def get_all_tasks(db: db_dependence):
 
 # get only categories
 @router.post("/categories", response_model=List[TaskBase])
-async def get_categories(db: db_dependence):
-    db_categories = db.query(Task).filter(Task.parent_id.is_(None)).all()
+async def get_categories(
+    db: db_dependence, current_user: Annotated[User, Depends(get_current_admin)]
+):
+    db_categories = (
+        db.query(Task)
+        .filter(Task.parent_id.is_(None), Task.company_id == current_user.company_id)
+        .all()
+    )
     return [TaskBase.model_validate(task) for task in db_categories]
 
 
