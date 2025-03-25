@@ -7,8 +7,8 @@ from typing import Optional
 
 class UserBase(BaseModel):
     id: int
-    first_name: str
-    last_name: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     email: str
     is_active: bool
     company_id: int
