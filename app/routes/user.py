@@ -117,7 +117,7 @@ async def delete_user(
     return db_user
 
 
-@router.get("/company/{company_id}", response_model=List[UserBase])
+@router.post("/company/{company_id}", response_model=List[UserBase])
 async def get_users_by_company(
     company_id: int,
     db: db_dependency,
