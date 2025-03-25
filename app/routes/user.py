@@ -115,3 +115,17 @@ async def delete_user(
     db.delete(db_user)
     db.commit()
     return db_user
+
+
+@router.get("/company/{company_id}", response_model=List[UserBase])
+async def get_users_by_company(
+    company_id: int,
+    db: db_dependency,
+    current_user: Annotated[User, Depends(get_current_admin)],
+):
+    db_users = (
+        db.query(User)
+        .filter(User.company_id == company_id, User.is_admin == False)
+        .all()
+    )
+    return [UserBase.model_validate(user) for user in db_users]
