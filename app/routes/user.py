@@ -17,7 +17,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-@router.get("/", response_model=List[UserBase])
+@router.post("/all", response_model=List[UserBase])
 async def get_users(
     db: db_dependency,
     current_user: Annotated[User, Depends(get_current_admin)],
@@ -30,7 +30,7 @@ async def get_users(
     return [UserBase.model_validate(user) for user in db_users]
 
 
-@router.get("/{id}", response_model=UserBase)
+@router.post("/{id}", response_model=UserBase)
 async def get_user(
     id: int,
     db: db_dependency,
