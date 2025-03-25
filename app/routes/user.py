@@ -22,7 +22,11 @@ async def get_users(
     db: db_dependency,
     current_user: Annotated[User, Depends(get_current_admin)],
 ):
-    db_users = db.query(User).filter(User.is_admin == False).all()
+    db_users = (
+        db.query(User)
+        .filter(User.is_admin == False, User.company_id == current_user.company_id)
+        .all()
+    )
     return [UserBase.model_validate(user) for user in db_users]
 
 
@@ -32,7 +36,11 @@ async def get_user(
     db: db_dependency,
     current_user: Annotated[User, Depends(get_current_admin)],
 ):
-    db_user = db.query(User).filter(User.id == id).first()
+    db_user = (
+        db.query(User)
+        .filter(User.id == id, User.company_id == current_user.company_id)
+        .first()
+    )
     if db_user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
@@ -109,7 +117,11 @@ async def delete_user(
     current_user: Annotated[User, Depends(get_current_admin)],
 ):
 
-    db_user = db.query(User).filter(User.id == id).first()
+    db_user = (
+        db.query(User)
+        .filter(User.id == id, User.company_id == current_user.company_id)
+        .first()
+    )
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     db.delete(db_user)
