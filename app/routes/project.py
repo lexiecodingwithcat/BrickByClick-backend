@@ -359,7 +359,7 @@ def determine_project_status(tasks):
 
     if TaskStatus.DELAYED in statuses:
         return (
-            ProjectStatus.IN_PROGRESS
+            ProjectStatus.DELAYED
         )  # Assuming delayed tasks are still considered in progress
 
     if TaskStatus.PENDING in statuses and TaskStatus.COMPLETED not in statuses:
