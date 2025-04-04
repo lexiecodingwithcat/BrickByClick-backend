@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
 from app.models.project import ProjectStatus, ProjectPriority
 
@@ -55,8 +55,10 @@ class ProjectUpdate(BaseModel):
     city_id: Optional[int]
     province_id: Optional[int]
     budget: Optional[float]
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     status: Optional[ProjectStatus] = ProjectStatus.PENDING
-    actual_end_date: Optional[datetime] = None
+    actual_end_date: Optional[Union[datetime, str]] = None
 
     class Config:
         from_attributes = True

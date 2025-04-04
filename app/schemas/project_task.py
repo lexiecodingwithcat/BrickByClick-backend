@@ -73,21 +73,16 @@ class ProjectTaskCreate(BaseModel):
 
 
 class ProjectTaskUpdate(BaseModel):
-    task_id: int
-    name: str = Field(..., max_length=50)
-    current_assignee: Optional[int] = None
-    priority: ProjectPriority = ProjectPriority.LOW
-    address: str = Field(..., max_length=100)
-    postal_code: Optional[str] = Field(None, max_length=10)
-    city_id: int
-    province_id: int
-    budget: float
-    status: ProjectStatus = ProjectStatus.PENDING
+    task_id: Optional[int]
+    assignee_id: Optional[int]
+    status: Optional[TaskStatus] = TaskStatus.PENDING
     start_date: Optional[datetime] = None
-    estimated_duration: Optional[int]
-    assignee_id: Optional[int] = None
-    company_id: Optional[int]
-    note: Optional[str] = Field(..., max_length=200)
+    end_date: Optional[datetime] = None
+    actual_end_date: Optional[datetime] = None
+    budget: Optional[float] = 0
+    amount_due: Optional[float] = 0
+    dependency: Optional[int] = 0  # task id
+    notes: Optional[str] = Field(None, max_length=200)
 
     class Config:
         from_attributes = True

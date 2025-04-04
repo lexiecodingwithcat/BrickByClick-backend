@@ -68,7 +68,8 @@ async def create_user(
         email=user.email,
         password=hashed_password,
         is_admin=user.is_admin,
-        company_id=user.company_id,
+        company_id=current_user.company_id,
+        is_active=user.is_active,
     )
 
     db.add(new_user)
@@ -79,6 +80,8 @@ async def create_user(
         first_name=new_user.first_name,
         last_name=new_user.last_name,
         email=new_user.email,
+        is_active=new_user.is_active,
+        company_id=new_user.company_id,
     )
 
 
@@ -103,8 +106,7 @@ async def update_user(
         db_user.email = user.email
     if user.password is not None:
         db_user.password = pwd_context.hash(user.password)
-    if user.is_admin is not None:
-        db_user.is_admin = user.is_admin
+
     db.commit()
     db.refresh(db_user)
     return db_user

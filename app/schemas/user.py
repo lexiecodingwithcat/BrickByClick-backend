@@ -27,6 +27,7 @@ class UserCreate(BaseModel):
     password: str
     is_admin: Optional[bool] = False
     company_id: Optional[int] = 1
+    is_active: Optional[bool] = True
 
     class Config:
         from_attributes = True
@@ -40,7 +41,6 @@ class UserUpdate(BaseModel):
     last_name: Optional[str]
     email: Optional[str]
     password: Optional[str]
-    is_admin: Optional[bool]
 
     class Config:
         from_attributes = True

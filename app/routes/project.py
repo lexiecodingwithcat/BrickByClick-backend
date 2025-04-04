@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends, status, BackgroundTasks
 from typing import Annotated, List
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+from app.models.notification import Notification
 from app.models.project import Project
 from app.models.user import User
 from app.models.task import Task
@@ -164,9 +165,9 @@ async def create_project(
 # Project ONLY
 @router.put("/{id}", response_model=ProjectBase)
 async def update_project(
-    db: db_dependence,
     id: int,
     project: ProjectUpdate,
+    db: db_dependence,
     current_user: Annotated[User, Depends(get_current_admin)],
 ):
     db_project = db.query(Project).filter(Project.id == id).first()
@@ -174,7 +175,7 @@ async def update_project(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project does not exist."
         )
-
+    print(project.model_dump())
     # Get only provided fields
     update_data = project.model_dump(exclude_unset=True)
 
@@ -214,8 +215,8 @@ async def delete_project(
 @router.post("/{id}/tasks", response_model=ProjectTaskBase)
 async def add_task(
     id: int,
-    db: db_dependence,
     task: TaskCreate,
+    db: db_dependence,
     current_user: Annotated[User, Depends(get_current_admin)],
 ):
     # Check if the project exists
@@ -224,15 +225,15 @@ async def add_task(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project does not exist"
         )
-
+    print("task:", task.model_dump())
     # check the existence of the task
-    db_task = db.query(Task).filter(task.name == Task.name).first()
+    db_task = db.query(Task).filter(Task.name == task.name).first()
     if db_task is None:
         # add new task to TASK table
         new_task = Task(
             parent_id=task.parent_id,
             name=task.name,
-            company_id=task.company_id,
+            company_id=current_user.company_id,
             sort_order=task.sort_order,
         )
         db.add(new_task)
@@ -278,7 +279,9 @@ async def add_task(
 
 
 # PROJECT_TASK
-@router.put("/{id}/tasks", response_model=ProjectTaskBase)
+@router.put(
+    "/{id}/tasks",
+)
 async def update_task(
     id: int,
     task_update: ProjectTaskUpdate,
@@ -294,13 +297,24 @@ async def update_task(
 
     # check if the project task exists
     db_project_task = (
-        db.query(ProjectTask).filter(ProjectTask.task_id == task_update.task_id).first()
+        db.query(ProjectTask)
+        .filter(
+            ProjectTask.task_id == task_update.task_id, ProjectTask.project_id == id
+        )
+        .first()
     )
     if db_project_task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Project task does not exist."
         )
+    print("db_project_task:", db_project_task)
+    if task_update.start_date is None:
+        task_update.start_date = db_project_task.start_date
+    if task_update.end_date is None:
+        task_update.end_date = db_project_task.end_date
 
+    print("db_project:", id)
+    print("task_update:", task_update.model_dump())
     # update project task
     update_data = task_update.model_dump(exclude_unset=True)
     for key, value in update_data.items():
@@ -308,30 +322,6 @@ async def update_task(
 
     db.commit()
     db.refresh(db_project_task)
-
-    # add project tracking
-    if task_update.assignee_id is not None:
-        db_project_tracking = (
-            db.query(ProjectTracking).filter(
-                ProjectTracking.project_id == id,
-                ProjectTracking.user_id == task_update.assignee_id,
-            )
-        ).first()
-        if db_project_tracking is None:
-            project_tracking = ProjectTracking(
-                project_id=id,
-                user_id=task_update.assignee_id,
-                start_date=task_update.start_date,
-                end_date=task_update.start_date
-                + timedelta(days=task_update.estimated_duration),
-            )
-            db.add(project_tracking)
-            db.commit()
-        else:
-            db_project_tracking.end_date = task_update.start_date + timedelta(
-                days=task_update.estimated_duration
-            )
-            db.commit()
 
     return db_project_task
 
@@ -380,6 +370,7 @@ async def send_email_to_assignee(
     background_tasks: BackgroundTasks,
     current_user: Annotated[User, Depends(get_current_admin)],
 ):
+
     db_project = db.query(Project).filter(Project.id == id).first()
     if db_project is None:
         raise HTTPException(
@@ -394,15 +385,22 @@ async def send_email_to_assignee(
             status_code=status.HTTP_404_NOT_FOUND, detail="Assignee does not exist."
         )
 
-    notification.project_id = id
-    db.add(notification)
-    db.commit()
+    db_notification = Notification(
+        title=notification.title,
+        content=notification.content,
+        task_id=notification.task_id,
+        to_user_id=notification.to_user_id,
+        project_id=id,
+    )
 
+    db.add(db_notification)
+    db.commit()
+    print("email:", assignee.email)
     # send email
     background_tasks.add_task(
         send_email,
         assignee.email,
         subject=notification.title,
-        template_name="notification.html",
+        template_name="notification",
         data={"title": notification.title, "content": notification.content},
     )
