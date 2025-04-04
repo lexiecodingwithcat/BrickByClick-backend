@@ -323,7 +323,59 @@ async def update_task(
     db.commit()
     db.refresh(db_project_task)
 
+    # update project status if task.status is updated
+    if "status" in update_data:
+        all_tasks = db.query(ProjectTask).filter(ProjectTask.project_id == id).all()
+        project_status = determine_project_status(
+            all_tasks
+        )  # Function to get project status
+        print("project_status:", project_status)
+        # update project status
+        if project_status != db_project.status:
+            db_project.status = project_status
+            db.commit()
+            db.refresh(db_project)
+
     return db_project_task
+
+
+def determine_project_status(tasks):
+    """
+    Determines project status based on all task statuses.
+    Example rules:
+    - If all tasks are "completed", project is "completed".
+    - If any task is "in progress", project is "in progress".
+    - If all tasks are "pending", project is "pending".
+    """
+
+    statuses = {task.status for task in tasks}
+    print("statuses:", statuses)
+
+    if TaskStatus.COMPLETED in statuses and len(statuses) == 1:
+        return ProjectStatus.COMPLETED
+
+    if TaskStatus.IN_PROGRESS in statuses:
+        return ProjectStatus.IN_PROGRESS
+
+    if TaskStatus.DELAYED in statuses:
+        return (
+            ProjectStatus.IN_PROGRESS
+        )  # Assuming delayed tasks are still considered in progress
+
+    if TaskStatus.PENDING in statuses and TaskStatus.COMPLETED not in statuses:
+        return ProjectStatus.PENDING
+
+    # Fallback: all statuses the same
+    if all(status == TaskStatus.COMPLETED for status in statuses):
+        return ProjectStatus.COMPLETED
+    if all(status == TaskStatus.PENDING for status in statuses):
+        return ProjectStatus.PENDING
+    if all(status == TaskStatus.DELAYED for status in statuses):
+        return ProjectStatus.DELAYED
+    if all(status == TaskStatus.IN_PROGRESS for status in statuses):
+        return ProjectStatus.IN_PROGRESS
+
+    return ProjectStatus.IN_PROGRESS  # Default case
 
 
 # delete project task
