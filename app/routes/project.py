@@ -212,6 +212,13 @@ async def delete_project(
     for project_task in db_project_tasks:
         db.delete(project_task)
 
+    # delete project notifications
+    db_notifications = (
+        db.query(Notification).filter(Notification.project_id == id).all()
+    )
+    for notification in db_notifications:
+        db.delete(notification)
+
     # delete project
     db.delete(db_project)
     db.commit()
