@@ -63,7 +63,9 @@ async def get_contractor_projects(
 async def get_all_projects(
     db: db_dependence, current_user: Annotated[User, Depends(get_current_admin)]
 ):
-    db_projects = db.query(Project).all()
+    db_projects = (
+        db.query(Project).filter(Project.company_id == current_user.company_id).all()
+    )
     return [ProjectBase.model_validate(project) for project in db_projects]
 
 
@@ -74,7 +76,11 @@ async def get_project_detail(
     db: db_dependence,
     current_user: Annotated[User, Depends(get_current_admin)],
 ):
-    db_project = db.query(Project).filter(Project.id == id).first()
+    db_project = (
+        db.query(Project)
+        .filter(Project.id == id, Project.company_id == current_user.company_id)
+        .first()
+    )
 
     if db_project is None:
         raise HTTPException(

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_serializer
 from typing import Optional, List, Union
 from datetime import datetime
 from app.models.project import ProjectStatus, ProjectPriority
@@ -22,6 +22,15 @@ class ProjectBase(BaseModel):
     end_date: Optional[datetime] = None
     actual_end_date: Optional[datetime] = None
     actual_budget: Optional[float] = None
+
+    @model_serializer(mode="plain")
+    def serialize(self):
+        data = self.__dict__.copy()
+        if abs(data["budget"]) >= 1000:
+            data["budget"] = f"{data['budget']:,.2f}"
+        else:
+            data["budget"] = f"{data['budget']:.2f}"
+        return data
 
     class Config:
         from_attributes = True
