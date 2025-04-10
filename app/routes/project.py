@@ -291,6 +291,26 @@ async def add_task(
     return response
 
 
+@router.post("/{id}/tasks/detail")
+async def get_project_tasks(
+    id: int,
+    task_id: int,
+    db: db_dependence,
+    current_user: Annotated[User, Depends(get_current_admin)],
+):
+    db_task = (
+        db.query(ProjectTask)
+        .filter(ProjectTask.project_id == id, ProjectTask.task_id == task_id)
+        .first()
+    )
+    if db_task is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Project task does not exist"
+        )
+
+    return db_task
+
+
 # PROJECT_TASK
 @router.put(
     "/{id}/tasks",
